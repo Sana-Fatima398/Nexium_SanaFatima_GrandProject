@@ -9,7 +9,8 @@ const recipeSchema = new mongoose.Schema({
     prepTime:{type:String},
     cookTime:{type:String},
     servingSize:{type:String},
-    type:{type:Boolean, default:false}
+    type:{type:Boolean, default:false},
+    image:{type:File, default:false}
 })
 
 const Recipe = mongoose.models.Recipe || mongoose.model('Recipe', recipeSchema);
