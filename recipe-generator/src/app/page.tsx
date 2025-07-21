@@ -97,11 +97,7 @@ export default function Home() {
         <div className="bg-amber-700 text-5xl">Emojis</div>
       </div>
 
-      <footer className="bg-amber-600 text-white py-4 mt-8">
-        <div className="container mx-auto text-center">
-          <p>&copy; {new Date().getFullYear()} Recipe Generator. All rights reserved.</p>    
-          </div>  
-      </footer>   
+    
     </div>
 
   );

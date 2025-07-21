@@ -30,6 +30,11 @@ export default function RootLayout({
       >
         <Navbar />
         {children}
+        <footer className="bg-amber-600 text-white py-4 mt-8">
+        <div className="container mx-auto text-center">
+          <p>&copy; {new Date().getFullYear()} Recipe Generator. All rights reserved.</p>    
+          </div>  
+      </footer> 
       </body>
     </html>
   );
