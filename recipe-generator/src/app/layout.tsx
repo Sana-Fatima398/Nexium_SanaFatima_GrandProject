@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Navbar } from "@/components/ui/navbar";
+import { Shadows_Into_Light } from 'next/font/google';
+
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -13,8 +15,14 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const shadows = Shadows_Into_Light({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-shadows',
+});
+
 export const metadata: Metadata = {
-  title: "Recipe Generator",
+  title: "Dish Genie",
   description: "Generates a recipe",
 };
 
@@ -26,7 +34,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} ${shadows.variable} antialiased bg-amber-50`}
       >
         <Navbar />
         {children}

@@ -1,10 +1,15 @@
 import React from "react";
+import { Shadows_Into_Light } from 'next/font/google';
 
+const shadows = Shadows_Into_Light({
+  subsets: ['latin'],
+  weight: '400',
+});
 export const Navbar: React.FC = () => {
   return (
     <nav className="bg-amber-600 p-4">
       <div className="container mx-auto flex justify-between items-center">
-        <div className="text-white text-lg font-bold">Recipe Generator</div>
+        <div className={`${shadows.className} text-white text-4xl font-bold` }>DishGenie</div>
         <ul className="flex space-x-4">
           <li>
             <a href="#" className="text-white hover:text-gray-300">
@@ -17,8 +22,8 @@ export const Navbar: React.FC = () => {
             </a>
           </li>
           <li>
-            <a href="/about" className="text-white hover:text-gray-300">
-              About
+            <a href="/account/signup" className="text-white hover:text-gray-300">
+              Sign up
             </a>
           </li>
         </ul>
