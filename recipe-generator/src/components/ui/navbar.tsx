@@ -1,5 +1,6 @@
 import React from "react";
 import { Shadows_Into_Light } from 'next/font/google';
+import Link from 'next/link';
 
 const shadows = Shadows_Into_Light({
   subsets: ['latin'],
@@ -12,12 +13,11 @@ export const Navbar: React.FC = () => {
         <div className={`${shadows.className} text-white text-4xl font-bold` }>DishGenie</div>
         <ul className="flex space-x-4">
           <li>
-            <a href="#" className="text-white hover:text-gray-300">
-              Home
-            </a>
+            <Link href="/" className="text-white hover:text-gray-300">Home</Link>
+          
           </li>
           <li>
-            <a href="/recipes" className="text-white hover:text-gray-300">
+            <a href="/viewRecipe" className="text-white hover:text-gray-300">
               Recipes
             </a>
           </li>

@@ -1,25 +1,22 @@
-import { createClient } from "../../../../../lib/supabase";
+import { createClient } from "../../../../../lib/supabase-server";
 
 import { NextResponse } from "next/server";
 
 export async function POST(request: Request) {
-    const supabase = createClient();
-    const { email, name, country } = await request.json();
+    const supabase = await createClient();
+    const { email } = await request.json();
 
     // Validate input
-    if (!email || !name || !country) {
+    if (!email ) {
         return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
     // Create a new user with the magic link
-    const { data, error } = await supabase.auth.signInWithOtp({
+    const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: {
-            data: {
-                name,
-                country,
-            },
-        },
+          options: {
+            emailRedirectTo: 'http://localhost:3000/account/signup', // or use `location.origin + '/account/signup'`
+        }
     });
 
     if (error) {

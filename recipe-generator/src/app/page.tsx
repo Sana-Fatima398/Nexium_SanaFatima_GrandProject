@@ -3,6 +3,7 @@
 import { CarouselPlugin } from "@/components/ui/carouselPlugin";
 import { Button } from "@/components/ui/button";
 import axios from 'axios';
+import { useEffect } from "react";
 import {
   Card,
   CardAction,
@@ -21,25 +22,95 @@ const shadows = Shadows_Into_Light({
   weight: '400',
 });
 
+function parseRecipeString(str :string) {
+  const extractSection = (key:string) => {
+    const match = str.match(new RegExp(`\\*\\*${key}:\\*\\*\\s*([\\s\\S]*?)(\\*\\*|$)`));
+    return match ? match[1].trim() : "";
+  };
+  return {
+    name: extractSection("Name"),
+    description: extractSection("Description"),
+    ingredients: extractSection("Ingredients")
+      .split("*")
+      .map((i) => i.trim())
+      .filter((i) => i),
+    instructions: extractSection("Instructions")
+      .split(/\d+\.\s/)
+      .map((i) => i.trim())
+      .filter((i) => i),
+    servingSize: extractSection("Serving Size"),
+    cookingTime: extractSection("Cooking Time"),
+    preparationTime: extractSection("Preparation Time"),
+    notes: extractSection("Notes"),
+  };
+}
+
 export default function Home() {
   
   const [prompt, setPrompt] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false); 
+  const [userEmail, setUserEmail] = useState('');
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isSaved, setIsSaved] = useState(false);
+  const [recipe, setRecipe] = useState<ReturnType<typeof parseRecipeString> | null>(null);
+
+  useEffect(() => {
+  async function fetchUser() {
+    try {
+      const res = await fetch('/api/auth/user');
+      if (res.status === 200) {
+        const data = await res.json();
+        setIsLoggedIn(true);
+        setUserEmail(data.message); 
+      } else {
+        setIsLoggedIn(false);
+      }
+    } catch (error) {
+      console.error("Error fetching user:", error);
+    }
+  }
+  fetchUser();
+}, []);
 
   const handleSubmit = async (e: React.FormEvent)=>{
 
     e.preventDefault();
     setLoading(true);
+    const pointsToNote = "Always give a recipe in response, if the user prompt is wrong, give a arbitrary message and the recipe should be in a proper format, Format is described as below:The format is name, description, indegredients, instructions, serving size, cooking time, preparation time, notes(extra information) ";
     try{
-      const response = await axios.post("http://localhost:5678/webhook/8585b14b-bd38-49c8-bb1c-9d88fc6912c5",{"query":prompt});
+      const response = await axios.post("http://localhost:5678/webhook/8585b14b-bd38-49c8-bb1c-9d88fc6912c5",{"query":prompt,"pointsToNote":pointsToNote});
       console.log('Workflow triggered:', response.data);
-      setResult(response.data);
-    } catch (error) {
+     
+      const rawRecipe = response.data;
+      const parsed = parseRecipeString(rawRecipe);
+
+      setResult(rawRecipe);
+      setRecipe(parsed);
+
+      } catch (error) {
       console.error('Error triggering workflow:', error);
     }
     setLoading(false);
   }
+
+  const saveRecipe = async(e:React.FormEvent)=>{
+
+    try{
+      const res = await axios.post('/api/recipe/save', {details:result, email:userEmail});
+   
+      if (res.status === 200) {
+        console.log('save data successfully');
+        setIsSaved(true);
+      }else {
+        console.log('Failed to save data');
+      }
+    }catch(error){
+       console.error('Error saving blog data:', error);
+      alert('Failed to save blog data. Please check the console for details.');
+    }
+  }
+
   return (
     <div className="flex flex-col">
       <div className="flex flex-rows mx-auto p-12 gap-14">
@@ -71,13 +142,63 @@ export default function Home() {
         <div className="progress-bar w-[60%] mt-5"></div>
         )}
         {result &&(
-          <div className="m-5 bg-white p-5">
-            {result}
-          </div>
-        )}
+          <div className="m-5 p-5">
+                   {recipe && (
+  <Card className="mt-6">
+    <CardHeader>
+      <CardTitle>{recipe.name}</CardTitle>
+      <CardDescription>{recipe.description}</CardDescription>
+    </CardHeader>
+    <CardContent>
+      <div>
+        <h3 className="font-semibold">🍽 Ingredients:</h3>
+        <ul className="list-disc ml-5">
+          {recipe.ingredients.map((item, idx) => (
+            <li key={idx}>{item}</li>
+          ))}
+        </ul>
+      </div>
+
+      <div className="mt-4">
+        <h3 className="font-semibold">👨‍🍳 Instructions:</h3>
+        <ol className="list-decimal ml-5">
+          {recipe.instructions.map((step, idx) => (
+            <li key={idx}>{step}</li>
+          ))}
+        </ol>
+      </div>
+
+      <div className="mt-4 space-y-1 text-sm text-gray-700">
+        <p><strong>Prep Time:</strong> {recipe.preparationTime}</p>
+        <p><strong>Cook Time:</strong> {recipe.cookingTime}</p>
+        <p><strong>Serving Size:</strong> {recipe.servingSize}</p>
+      </div>
+
+      <div className="mt-4">
+        <h4 className="font-semibold">📌 Notes:</h4>
+        <p>{recipe.notes}</p>
+      </div>
+    </CardContent>
+    <CardFooter>
+       {isLoggedIn && !isSaved && (
+    <Button onClick={saveRecipe}>Save</Button>
+  )}
+  {isSaved && (
+    <Button disabled variant="outline">Saved</Button>
+  )}
+    </CardFooter>
+  </Card>
+)}
+                  </div>
+                
+                
+                
+                
+                )}
         
 
       </div>
+ 
 
       <div className="flex flex-col items-center justify-center p-12 bg-amber-100">
         <h1 className="font-shadow text-5xl mb-4">Popular Recipes</h1>

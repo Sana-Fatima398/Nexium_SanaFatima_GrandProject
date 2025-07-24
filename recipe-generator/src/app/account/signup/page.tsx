@@ -1,24 +1,20 @@
 'use client';
 import React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import "flag-icons/css/flag-icons.min.css";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
+import { createBrowClient } from '../../../../lib/supabase-browser';
 
 export default function SignUpPage(){
 
     const [email, setEmail] = useState('');
-    const [name, setName] = useState('');
-    const [country, setCountry] = useState('');
+    const [result, setResult] = useState('');
+    const [login, setLogin] = useState(false);
+    const [user, setUser] = useState('');
 
+
+    
     const handleSubmit = async(e: React.FormEvent) => {
         e.preventDefault();
         const response = await fetch('/api/auth/magic-link', {
@@ -26,23 +22,78 @@ export default function SignUpPage(){
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ email, name, country }),
+            body: JSON.stringify({ email }),
         });
 
         if (response.status === 200) {
+            setResult("Check your email for the magic link!");
             // Handle successful signup
             console.log('Signup successful');
         } else {
             // Handle error
-            console.error('Signup failed');
+            console.log('Signup failed');
         }
     }
 
+    const handleLogout = async () =>{
+        
+        const response = await fetch('/api/auth/signout');
+        if(response.status === 200){
+            setLogin(false);
+            setUser('');
+            setResult('');
+        }
+        else{
+            console.error("Sign out failed");
+        }
+    }
+    
+    async function fetchUser() {
+        const res = await fetch('/api/auth/user');
+        if (res.status === 200) {
+            const data = await res.json();
+            setLogin(true);
+            setUser(data.message); // "Hello user@example.com"
+        } else {
+            setLogin(false);
+            setUser('');
+        }
+    }
+
+    useEffect(() => {
+        async function checkMagicLink() {
+            const supabase = createBrowClient();
+            const url = new URL(window.location.href);
+            const code = url.searchParams.get('code');
+
+            if (code) {
+                const { error } = await supabase.auth.exchangeCodeForSession(code);
+                if (!error) {
+                    window.history.replaceState({}, document.title, '/account/signup'); // remove code from URL
+                    fetchUser(); // refresh user
+                } else {
+                    console.error("Session exchange failed:", error.message);
+                }
+                } else {
+                    fetchUser(); // Just fetch user if no code
+            }
+        }
+
+    checkMagicLink();
+}, []);
+
     return (
-        <div className='flex flex-col items-center justify-center min-h-screen p-8'>
-            <form onSubmit={handleSubmit}>
-                <div className="grid w-full max-w-sm items-center gap-3">
-                    <Label htmlFor="email">Email</Label>
+        <div className='flex flex-col items-center justify-center'>
+            {login ? (<div className='flex flex-col bg-amber-100 rounded-lg w-1/2 my-16 gap-5 p-8'>
+                <p>your are alreaady signed in:{user}</p>
+                <Button className='mx-auto w-1/2 bg-amber-600 hover:bg-amber-500' onClick={handleLogout}>sign out</Button>
+            </div>):(
+                <div className='w-1/2 my-16'>
+                   <form onSubmit={handleSubmit} className='w-full'>
+                <div className='flex flex-col bg-amber-100 rounded-lg w-full mx-auto p-7 gap-7'>
+                <></>
+                <div className="w-full items-center">
+                    <Label htmlFor="email" className='pb-4'>Email</Label>
                     <Input 
                         type="email" 
                         id="email" 
@@ -50,40 +101,18 @@ export default function SignUpPage(){
                         value={email} 
                         onChange={(e)=>setEmail(e.target.value)}/>
                 </div>
-
-                <div className="grid w-full max-w-sm items-center gap-3">
-                    <Label htmlFor="name">Name</Label>
-                    <Input 
-                        type="text" 
-                        id="name" 
-                        value={name}
-                        onChange={(e)=>setName(e.target.value)}/>
+                <Button className="bg-amber-600 w-full hover:bg-amber-700" >Sign Up</Button>
                 </div>
-
-                <div className="grid w-full max-w-sm items-center gap-3">
-                    <Label htmlFor='country'>Select your Country</Label>
-                    <Select value={country} onValueChange={(value) => setCountry(value)}>
-                        <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Country" />
-                        </SelectTrigger>
-                        <SelectContent>
-                                <SelectItem value="pakistan"><span className="fi fi-pk" style={{ marginRight: "8px" }}></span>Pakistan</SelectItem>
-                                <SelectItem value="usa"><span className="fi fi-us" style={{ marginRight: "8px" }}></span>United States</SelectItem>
-                                <SelectItem value="canada"><span className="fi fi-ca" style={{ marginRight: "8px" }}></span>Canada</SelectItem>
-                                <SelectItem value="uk"><span className="fi fi-uk" style={{ marginRight: "8px" }}></span>United Kingdom</SelectItem>
-                                <SelectItem value="australia"><span className="fi fi-au" style={{ marginRight: "8px" }}></span>Australia</SelectItem>
-                                <SelectItem value="germany"><span className="fi fi-de" style={{ marginRight: "8px" }}></span>Germany</SelectItem>
-                                <SelectItem value="france"><span className="fi fi-fr" style={{ marginRight: "8px" }}></span>France</SelectItem>
-                                <SelectItem value="japan"><span className="fi fi-jp" style={{ marginRight: "8px" }}></span>Japan</SelectItem>
-                                <SelectItem value="brazil"><span className="fi fi-br" style={{ marginRight: "8px" }}></span>Brazil</SelectItem>
-                                <SelectItem value="india"><span className="fi fi-in" style={{ marginRight: "8px" }}></span>India</SelectItem>
-                                <SelectItem value="china"><span className="fi fi-cn" style={{ marginRight: "8px" }}></span>China</SelectItem>
-                            </SelectContent>
-                    </Select>
-                </div>
-
-                <Button className="bg-amber-600" >Sign Up</Button>
                 </form>
+                <div className='mb-16'>
+                {result !== '' && (
+                    <div>{result}</div>
+                )}
+                </div>
+                </div>
+            )}
+
+         
         </div>
     );
 
