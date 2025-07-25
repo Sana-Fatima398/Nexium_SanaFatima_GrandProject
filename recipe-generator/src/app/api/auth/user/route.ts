@@ -14,5 +14,12 @@ export async function GET(){
         return NextResponse.json({error:"Unauthorized"}, {status:401});
     }
 
-    return NextResponse.json({message:`${user.email}`}, {status: 200});
+    return NextResponse.json({
+      message: {
+        _id: user.id,
+        email: user.email,
+      },
+    },
+    { status: 200 }
+    );
 }

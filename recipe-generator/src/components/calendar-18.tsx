@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-
 import { Calendar } from "@/components/ui/calendar"
 
 export default function Calendar18() {
@@ -10,12 +9,16 @@ export default function Calendar18() {
   )
 
   return (
-    <Calendar
-      mode="single"
-      selected={date}
-      onSelect={setDate}
-      className="rounded-lg border [--cell-size:--spacing(11)] md:[--cell-size:--spacing(12)]"
-      buttonVariant="ghost"
-    />
+    <div className="w-full flex justify-center">
+      <div className="w-full max-w-sm scale-[0.85] sm:scale-100 transition-transform duration-200">
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          className="rounded-lg border w-full"
+          buttonVariant="ghost"
+        />
+      </div>
+    </div>
   )
 }

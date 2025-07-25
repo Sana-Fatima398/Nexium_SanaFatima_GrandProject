@@ -6,16 +6,15 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     const { email } = await request.json();
 
-    // Validate input
+   
     if (!email ) {
         return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
 
-    // Create a new user with the magic link
     const { error } = await supabase.auth.signInWithOtp({
         email,
           options: {
-            emailRedirectTo: 'http://localhost:3000/account/signup', // or use `location.origin + '/account/signup'`
+            emailRedirectTo: 'http://localhost:3000/account/signup', 
         }
     });
 

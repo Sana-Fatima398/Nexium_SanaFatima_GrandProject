@@ -13,14 +13,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { Shadows_Into_Light } from 'next/font/google';
 import { Input } from "@/components/ui/input";
 import React, { useState } from "react";
+import { useUserContext } from "@/app/context/UserContext";
 
-const shadows = Shadows_Into_Light({
-  subsets: ['latin'],
-  weight: '400',
-});
+
 
 function parseRecipeString(str :string) {
   const extractSection = (key:string) => {
@@ -50,28 +47,10 @@ export default function Home() {
   const [prompt, setPrompt] = useState("");
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false); 
-  const [userEmail, setUserEmail] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSaved, setIsSaved] = useState(false);
   const [recipe, setRecipe] = useState<ReturnType<typeof parseRecipeString> | null>(null);
 
-  useEffect(() => {
-  async function fetchUser() {
-    try {
-      const res = await fetch('/api/auth/user');
-      if (res.status === 200) {
-        const data = await res.json();
-        setIsLoggedIn(true);
-        setUserEmail(data.message); 
-      } else {
-        setIsLoggedIn(false);
-      }
-    } catch (error) {
-      console.error("Error fetching user:", error);
-    }
-  }
-  fetchUser();
-}, []);
+  const { user, login } = useUserContext();
 
   const handleSubmit = async (e: React.FormEvent)=>{
 
@@ -94,10 +73,10 @@ export default function Home() {
     setLoading(false);
   }
 
-  const saveRecipe = async(e:React.FormEvent)=>{
+  const saveRecipe = async()=>{
 
     try{
-      const res = await axios.post('/api/recipe/save', {details:result, email:userEmail});
+      const res = await axios.post('/api/recipe/save', {details:result, email:user?.email});
    
       if (res.status === 200) {
         console.log('save data successfully');
@@ -180,7 +159,7 @@ export default function Home() {
       </div>
     </CardContent>
     <CardFooter>
-       {isLoggedIn && !isSaved && (
+       {login && !isSaved && (
     <Button onClick={saveRecipe}>Save</Button>
   )}
   {isSaved && (
@@ -252,7 +231,7 @@ export default function Home() {
           <h1 className="font-shadow text-5xl md:text-6xl text-amber-800 font-semibold text-center md:text-left m-5">
       Personalise it
     </h1>
-    <p className="font-shadow text-3xl m-5">Personalize it by adding your own events — whether it's a wedding, Eid, Christmas, or anything special!</p>
+    <p className="font-shadow text-3xl m-5">Personalize it by adding your own events — whether it is a wedding, Eid, Christmas, or anything special!</p>
 
     </div>
     <div className="w-3/4 md:w-2/5">
@@ -270,7 +249,7 @@ export default function Home() {
     <p className="font-shadow text-5xl md:text-6xl text-center md:text-left font-semibold text-amber-800  my-2">
       Do like and subscribe
     </p>
-    <p className="font-shadow text-3xl my-5">Personalize it by adding your own events — whether it's a wedding, Eid, Christmas, or anything special!</p>
+    <p className="font-shadow text-3xl my-5">Personalize it by adding your own events — whether it is a wedding, Eid, Christmas, or anything special!</p>
 </div>
     <div className="bg-amber-400 text-white text-4xl md:text-5xl p-4 px-6 rounded-sm shadow-md animate-pulse flex flex-col gap-6">
      <div>❤️</div>

@@ -1,5 +1,36 @@
+'use client';
+import { useState, useEffect } from "react";
+import { useRecipeContext } from "@/app/context/RecipeContext";
+import { useParams } from 'next/navigation';
 
+interface Recipe{
+    _id:string;
+    details:string;
+    email:string;
+}
 export default function Recipe(){
+    const { id } = useParams();
+    const [recipe, setRecipe] = useState<Recipe>();
+    useEffect(() => {
+        const fetchRecipe = async () => {
+        try {
+            const res = await fetch('/api/recipe/readById', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id }),
+            });
+            const data = await res.json();
+            setRecipe(data);
+        } catch (err) {
+            console.error("Failed to fetch recipe:", err);
+        }
+        };
+
+        if (id) fetchRecipe();
+    }, [id]);
+
     return (
         <div>
             <div className="flex flex-col w-full h-96 relative overflow-hidden">
@@ -24,6 +55,14 @@ export default function Recipe(){
 
 
             </div>
+            {recipe ? (
+        <>
+          <h1>{recipe.details}</h1>
+          <p>{recipe.email}</p>
+        </>
+      ) : (
+        <p>Loading...</p>
+      )}
 
             <div className="m-20">
                 <div><p className="text-5xl mb-7">Indegredients</p></div>

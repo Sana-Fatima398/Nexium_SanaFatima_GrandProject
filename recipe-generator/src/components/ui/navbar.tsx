@@ -17,9 +17,7 @@ export const Navbar: React.FC = () => {
           
           </li>
           <li>
-            <a href="/viewRecipe" className="text-white hover:text-gray-300">
-              Recipes
-            </a>
+            <Link href="/viewRecipe" className="text-white hover:text-gray-300">Recipes</Link>
           </li>
           <li>
             <a href="/account/signup" className="text-white hover:text-gray-300">

@@ -5,13 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { createBrowClient } from '../../../../lib/supabase-browser';
+import { useUserContext } from '../../context/UserContext';
 
 export default function SignUpPage(){
 
     const [email, setEmail] = useState('');
     const [result, setResult] = useState('');
-    const [login, setLogin] = useState(false);
-    const [user, setUser] = useState('');
+
+    const { user, setUser, login, setLogin } = useUserContext();
 
 
     
@@ -40,7 +41,7 @@ export default function SignUpPage(){
         const response = await fetch('/api/auth/signout');
         if(response.status === 200){
             setLogin(false);
-            setUser('');
+            setUser(undefined);
             setResult('');
         }
         else{
@@ -48,19 +49,20 @@ export default function SignUpPage(){
         }
     }
     
-    async function fetchUser() {
-        const res = await fetch('/api/auth/user');
-        if (res.status === 200) {
-            const data = await res.json();
-            setLogin(true);
-            setUser(data.message); // "Hello user@example.com"
-        } else {
-            setLogin(false);
-            setUser('');
-        }
-    }
+  
 
     useEffect(() => {
+          async function fetchUser() {
+            const res = await fetch('/api/auth/user');
+            if (res.status === 200) {
+                const data = await res.json();
+                setLogin(true);
+                setUser(data.message); 
+            } else {
+                setLogin(false);
+                setUser(undefined);
+            }
+        }
         async function checkMagicLink() {
             const supabase = createBrowClient();
             const url = new URL(window.location.href);
@@ -69,23 +71,24 @@ export default function SignUpPage(){
             if (code) {
                 const { error } = await supabase.auth.exchangeCodeForSession(code);
                 if (!error) {
-                    window.history.replaceState({}, document.title, '/account/signup'); // remove code from URL
-                    fetchUser(); // refresh user
+                    window.history.replaceState({}, document.title, '/account/signup'); 
+                    fetchUser();
                 } else {
                     console.error("Session exchange failed:", error.message);
                 }
                 } else {
-                    fetchUser(); // Just fetch user if no code
+                    fetchUser(); 
             }
         }
 
     checkMagicLink();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
 }, []);
 
     return (
         <div className='flex flex-col items-center justify-center'>
             {login ? (<div className='flex flex-col bg-amber-100 rounded-lg w-1/2 my-16 gap-5 p-8'>
-                <p>your are alreaady signed in:{user}</p>
+                <p>your are alreaady signed in:{user?.email}</p>
                 <Button className='mx-auto w-1/2 bg-amber-600 hover:bg-amber-500' onClick={handleLogout}>sign out</Button>
             </div>):(
                 <div className='w-1/2 my-16'>
