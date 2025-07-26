@@ -4,7 +4,17 @@ import { createContext, useContext, useState, ReactNode } from "react";
 type Recipe = {
   _id: string;
   email: string;
-  details: string;    
+  prompt: string;
+  intro?: string;
+  name: string;
+  description?: string;
+  ingredients: string[];
+  instructions: string[];
+  servingSize?: string;
+  cookingTime?: string;
+  preparationTime?: string;
+  notes?: string;
+  createdAt?: string;   
 };  
 
 type RecipeContextType = {

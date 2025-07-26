@@ -1,11 +1,13 @@
 'use client'
 
+import { useEffect } from "react";
 import React, { useState } from "react"
 import { ChevronDownIcon, PlusCircle, MinusCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Calendar } from "@/components/ui/calendar"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Label } from "@/components/ui/label";
+import axios from 'axios';
 import {
   Accordion,
   AccordionContent,
@@ -17,47 +19,133 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import Calendar18 from "@/components/calendar-18"
+import Calendar18 from "@/components/calendar-18";
+import { useRecipeContext } from "../context/RecipeContext";
+import { useUserContext } from "../context/UserContext";
 
-const recipeOptions = ["Biryani", "Cake", "Tacos", "Sushi", "Korma"]
+
+
+type Event = {
+  email: string;
+  name: string;
+  date: Date;
+  time: string;
+  recipes: [{_id:string, name:string}]
+  createdAt?: string;
+}
+
 
 export default function EventsPage() {
   const [open, setOpen] = useState(false)
   const [date, setDate] = useState<Date | undefined>(undefined)
   const [time, setTime] = useState("10:30:00")
   const [eventName, setEventName] = useState("")
-  const [recipes, setRecipes] = useState<string[]>([""])
-  const [events, setEvents] = useState<
-    { name: string; date: Date; time: string; recipes: string[] }[]
-  >([])
+  const { recipes, setRecipes } = useRecipeContext();
+  const [userEvents, setUserEvent] = useState<Event[]>([]);
+  const [events, setEvents] = useState<Event | undefined>(undefined);
+  const {user} = useUserContext();
 
-  const handleAddEvent = () => {
-    if (eventName && date && recipes.some(r => r)) {
-      setEvents(prev => [
-        { name: eventName, date, time, recipes: recipes.filter(r => r) },
-        ...prev,
-      ])
-      setEventName("")
-      setDate(undefined)
-      setRecipes([""])
+  useEffect(() => {
+    
+      const fetchRecipes = async () => {
+        try {
+          const res = await fetch("/api/recipe/read",{
+              method: "POST",
+                headers: {
+                      "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ email: user?.email })  
+                });
+                if (!res.ok) throw new Error("Failed to fetch recipes");
+                const data = await res.json();
+                setRecipes(data); 
+            } catch (error) {
+                console.error("Error fetching recipes:", error);
+            } 
+        };
+
+   
+    
+
+  }, [setRecipes]);
+
+     const fetchEvents = async () =>{
+        if (!user?.email) return;
+        try{
+          const res = await fetch("api/event/read",{
+            method:"POST",
+              headers: {
+                "Content-Type": "application/json"
+              },
+              body: JSON.stringify({ email: user?.email })  
+          })
+            if (!res.ok) throw new Error("Failed to fetch events");
+            const data = await res.json();
+            console.log("Fetched events:", data);
+            setUserEvent(data);
+        }catch(error)
+        {
+          console.error("Error fetching events:", error);
+        }
+      }
+
+  const handleAddEvent = async () => {
+    try{
+ 
+    if (eventName && date) {
+       console.log(user?.email);
+       console.log(date);
+       console.log(time);
+       console.log(recipes)
+      const res = await axios.post('/api/event/add', {
+        email: user?.email,
+        name: eventName,
+        date: date,
+        time: time, 
+        recipes,      
+      });
+      
+     if (res.status === 200) {
+        console.log('Saved event successfully');
+        setEvents(undefined)
+        setEventName("")
+        setDate(undefined)
+        setRecipes([])
+        } else {
+        console.log('Failed to event recipe');
+      }
+    } 
+  }
+    catch (error) {
+      console.error('Error saving recipe:', error);
+      alert('Failed to save recipe. Please check the console for details.');
     }
   }
 
-  const handleRecipeChange = (index: number, value: string) => {
-    const updated = [...recipes]
-    updated[index] = value
-    setRecipes(updated)
-  }
+ const handleRecipeChange = (index: number, value: string) => {
+  const updated = [...recipes];
+  updated[index] = { ...updated[index], name: value }; // update only name
+  setRecipes(updated);
+};
 
-  const handleAddRecipeField = () => {
-    setRecipes(prev => [...prev, ""])
-  }
+const handleAddRecipeField = () => {
+  setRecipes(prev => [...prev,  {
+      _id: "",
+      name: "",
+      email: "",         // required
+      prompt: "",        // required
+      ingredients: [],
+      instructions: []
+    }]); // new empty recipe
+};
 
-  const handleRemoveRecipeField = (index: number) => {
-    if (recipes.length > 1) {
-      setRecipes(prev => prev.filter((_, i) => i !== index))
-    }
+const handleRemoveRecipeField = (index: number) => {
+  if (recipes.length > 1) {
+    setRecipes(prev => prev.filter((_, i) => i !== index));
   }
+};
+
+
 
   return (
     <div className="p-5 space-y-10 sm:m-7 ">
@@ -101,16 +189,16 @@ export default function EventsPage() {
             {recipes.map((recipe, index) => (
               <div key={index} className="flex flex-row items-center gap-2 w-full">
                 <select
-                  value={recipe}
+                  value={recipe.name}
                   onChange={(e) =>
                     handleRecipeChange(index, e.target.value)
                   }
                   className="w-full border p-2 rounded-md"
                 >
                   <option value="">Select a recipe</option>
-                  {recipeOptions.map((opt, idx) => (
-                    <option key={idx} value={opt}>
-                      {opt}
+                  {recipes.map((recipe) => (
+                    <option key={recipe._id} value={recipe.name}>
+                      {recipe.name}
                     </option>
                   ))}
                 </select>
@@ -181,28 +269,29 @@ export default function EventsPage() {
 
       </div>
 
-    
+      {user?.email !== '' && <div><Button onClick={fetchEvents}></Button></div>}
       <div className="mt-10">
         <h2 className="text-2xl font-semibold mb-4">Added Events</h2>
-        {events.length === 0 ? (
+        {userEvents.length === 0 ? (
           <p className="text-muted-foreground">No events yet.</p>
         ) : (
           <Accordion type="multiple" className="w-full space-y-2">
-            {events.map((event, idx) => (
+            {userEvents.map((event, idx) => (
               <AccordionItem key={idx} value={`item-${idx}`}>
                 <AccordionTrigger>
-                  {event.name} — {event.date.toLocaleDateString()}
+                  {event.name}
                 </AccordionTrigger>
                 <AccordionContent>
                   <p>
                     <strong>Time:</strong> {event.time}
                   </p>
                   <p>
-                    <strong>Date:</strong> {event.date.toLocaleDateString()}
+                    <strong>Date:</strong> {event.time}
                   </p>
                   <p>
                     <strong>Recipes:</strong>{" "}
-                    {event.recipes.join(", ") || "None"}
+                    {event.recipes.map(r => r.name).join(", ") || "None"}
+
                   </p>
                 </AccordionContent>
               </AccordionItem>
@@ -210,6 +299,7 @@ export default function EventsPage() {
           </Accordion>
         )}
       </div>
+      
     </div>
   )
 }

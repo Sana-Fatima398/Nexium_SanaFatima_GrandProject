@@ -16,31 +16,9 @@ import {
 import { Input } from "@/components/ui/input";
 import React, { useState } from "react";
 import { useUserContext } from "@/app/context/UserContext";
+import { parseRecipe, ParsedRecipe } from "@/app/utils/parseRecipe";
 
 
-
-function parseRecipeString(str :string) {
-  const extractSection = (key:string) => {
-    const match = str.match(new RegExp(`\\*\\*${key}:\\*\\*\\s*([\\s\\S]*?)(\\*\\*|$)`));
-    return match ? match[1].trim() : "";
-  };
-  return {
-    name: extractSection("Name"),
-    description: extractSection("Description"),
-    ingredients: extractSection("Ingredients")
-      .split("*")
-      .map((i) => i.trim())
-      .filter((i) => i),
-    instructions: extractSection("Instructions")
-      .split(/\d+\.\s/)
-      .map((i) => i.trim())
-      .filter((i) => i),
-    servingSize: extractSection("Serving Size"),
-    cookingTime: extractSection("Cooking Time"),
-    preparationTime: extractSection("Preparation Time"),
-    notes: extractSection("Notes"),
-  };
-}
 
 export default function Home() {
   
@@ -48,22 +26,27 @@ export default function Home() {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false); 
   const [isSaved, setIsSaved] = useState(false);
-  const [recipe, setRecipe] = useState<ReturnType<typeof parseRecipeString> | null>(null);
+  
+  const [recipe, setRecipe] = useState<ParsedRecipe | null>(null);
 
   const { user, login } = useUserContext();
 
   const handleSubmit = async (e: React.FormEvent)=>{
 
     e.preventDefault();
+    if(prompt === ''){
+      alert("Add prompy first");
+      return
+    }
     setLoading(true);
-    const pointsToNote = "Always give a recipe in response, if the user prompt is wrong, give a arbitrary message and the recipe should be in a proper format, Format is described as below:The format is name, description, indegredients, instructions, serving size, cooking time, preparation time, notes(extra information) ";
+    const pointsToNote =  'The recipe that you produce should be a json object { "intro": string, "name": string,"description":string,"ingredients":string[],"instructions": string[], "servingSize": string, "cookingTime": string, "preparationTime": string, "notes": string }. If the prompt is wrong, unclear just response politely that they should enter the prompt clearly.';
     try{
       const response = await axios.post("http://localhost:5678/webhook/8585b14b-bd38-49c8-bb1c-9d88fc6912c5",{"query":prompt,"pointsToNote":pointsToNote});
       console.log('Workflow triggered:', response.data);
      
       const rawRecipe = response.data;
-      const parsed = parseRecipeString(rawRecipe);
-
+      const parsed = parseRecipe(rawRecipe);
+      console.log(parsed)
       setResult(rawRecipe);
       setRecipe(parsed);
 
@@ -73,110 +56,134 @@ export default function Home() {
     setLoading(false);
   }
 
-  const saveRecipe = async()=>{
-
-    try{
-      const res = await axios.post('/api/recipe/save', {details:result, email:user?.email});
-   
-      if (res.status === 200) {
-        console.log('save data successfully');
-        setIsSaved(true);
-      }else {
-        console.log('Failed to save data');
+  const saveRecipe = async () => {
+    try {
+      if (!user?.email) {
+        alert("Missing recipe or user info.");
+        return;
       }
-    }catch(error){
-       console.error('Error saving blog data:', error);
-      alert('Failed to save blog data. Please check the console for details.');
+
+      console.log(user.email);
+      console.log(prompt);
+      console.log(recipe);
+      
+
+      const res = await axios.post('/api/recipe/save', {
+        email: user.email,
+        prompt: prompt, 
+        ...recipe,      
+      });
+
+      if (res.status === 200) {
+        console.log('Saved recipe successfully');
+        setIsSaved(true);
+      } else {
+        console.log('Failed to save recipe');
+      }
+    } catch (error) {
+      console.error('Error saving recipe:', error);
+      alert('Failed to save recipe. Please check the console for details.');
     }
-  }
+  };
 
   return (
     <div className="flex flex-col">
-      <div className="flex flex-rows mx-auto p-12 gap-14">
-       
-        <div className="ms-10">
-          <CarouselPlugin />
-          </div>
-          <div className="mt-3">
-            <h1 className="font-shadow text-7xl text-center text-amber-800 my-6">Dish Genie</h1>
-            <h1 className="font-shadow text-7xl text-center">Generate a recipe using AI</h1>
-     
-          </div>
-      </div>
+  <div className="flex flex-col md:flex-row items-center md:items-start max-w-6xl mx-auto px-4 py-8 gap-10">
+  {/* Left: Carousel */}
+  <div className="w-full md:w-1/2 flex justify-center md:justify-start">
+    <CarouselPlugin />
+  </div>
 
-      <h1 className="font-shadow text-5xl text-center mt-10">Write your prompt</h1>
-      <div className=" flex flex-col items-center justify-center bg-amber-100 m-14 p-8 rounded-lg">
+  {/* Right: Headings */}
+  <div className="w-full md:w-1/2 text-center md:text-left">
+    <h1 className="font-shadow text-4xl md:text-6xl text-amber-800 mb-4">Dish Genie</h1>
+    <h2 className="font-shadow text-2xl md:text-4xl">Generate a recipe using AI</h2>
+  </div>
+</div>
 
-        <form onSubmit={handleSubmit}>
-        <div className="flex flex-row gap-6 w-full">
-            <Input className=" bg-white w-1/2" 
-            value={prompt} 
-            onChange={(e)=>setPrompt(e.target.value)}/>
-            <Button className=" bg-green-500 w-3/12" type="submit">Generate</Button>
-        </div>
-        </form>
 
-        
-       {loading && (
-        <div className="progress-bar w-[60%] mt-5"></div>
-        )}
-        {result &&(
-          <div className="m-5 p-5">
-                   {recipe && (
-  <Card className="mt-6">
-    <CardHeader>
-      <CardTitle>{recipe.name}</CardTitle>
-      <CardDescription>{recipe.description}</CardDescription>
-    </CardHeader>
-    <CardContent>
-      <div>
-        <h3 className="font-semibold">🍽 Ingredients:</h3>
-        <ul className="list-disc ml-5">
-          {recipe.ingredients.map((item, idx) => (
-            <li key={idx}>{item}</li>
-          ))}
-        </ul>
-      </div>
 
-      <div className="mt-4">
-        <h3 className="font-semibold">👨‍🍳 Instructions:</h3>
-        <ol className="list-decimal ml-5">
-          {recipe.instructions.map((step, idx) => (
-            <li key={idx}>{step}</li>
-          ))}
-        </ol>
-      </div>
+<h1 className="font-shadow text-4xl md:text-5xl text-center mt-10">Write your prompt</h1>
 
-      <div className="mt-4 space-y-1 text-sm text-gray-700">
-        <p><strong>Prep Time:</strong> {recipe.preparationTime}</p>
-        <p><strong>Cook Time:</strong> {recipe.cookingTime}</p>
-        <p><strong>Serving Size:</strong> {recipe.servingSize}</p>
-      </div>
+<div className="flex flex-col items-center justify-center bg-amber-100 mx-4 md:mx-14 my-10 p-6 md:p-8 rounded-lg">
+  <form onSubmit={handleSubmit} className="w-full max-w-5xl">
+    <div className="flex flex-col md:flex-row gap-4 md:gap-6 w-full">
+      <Input
+        className="w-full md:w-11/12 bg-white shadow-md transition-all duration-200 focus:ring-2 focus:ring-amber-400"
+        value={prompt}
+        onChange={(e) => setPrompt(e.target.value)}
+        placeholder="Type your prompt here..."
+      />
+      <Button
+        type="submit"
+        className="w-full md:w-1/12 bg-green-500 text-white font-semibold shadow-md transition-all duration-200 focus:ring-2 rounded-full"
+      >
+        <span className="text-3xl mb-1">→</span>
+      </Button>
+    </div>
+  </form>
+</div>
 
-      <div className="mt-4">
-        <h4 className="font-semibold">📌 Notes:</h4>
-        <p>{recipe.notes}</p>
-      </div>
-    </CardContent>
-    <CardFooter>
-       {login && !isSaved && (
-    <Button onClick={saveRecipe}>Save</Button>
+
+    <div className="flex flex-col items-center justify-center bg-amber-100 mx-0 md:mx-0 my-10 p-6 md:p-3 rounded-lg w-full">
+
+  {/* Show progress bar only while loading */}
+  {loading && (
+    <div className="progress-bar w-[60%] mt-5 h-2 bg-amber-300 rounded animate-pulse" />
   )}
-  {isSaved && (
-    <Button disabled variant="outline">Saved</Button>
-  )}
-    </CardFooter>
-  </Card>
-)}
-                  </div>
-                
-                
-                
-                
-                )}
-        
 
-      </div>
+  {/* Show result only if not loading and result exists */}
+  {result && !loading && recipe && (
+    <div className="m-0 md:m-0 p-0 md:p-0 w-full max-w-5xl animate-fade-in">
+      <Card className="mt-2 w-full">
+        <CardHeader>
+          <CardDescription>{recipe.intro}</CardDescription>
+          <CardTitle className="text-xl md:text-3xl">{recipe.name}</CardTitle>
+          <CardDescription className="text-sm md:text-base">{recipe.description}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div>
+            <h3 className="font-semibold text-lg">🍽 Ingredients:</h3>
+            <ul className="list-disc ml-5 text-sm md:text-base">
+              {recipe.ingredients.map((item, idx) => (
+                <li key={idx}>{item}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="mt-4">
+            <h3 className="font-semibold text-lg">👨‍🍳 Instructions:</h3>
+            <ol className="list-decimal ml-5 text-sm md:text-base">
+              {recipe.instructions.map((step, idx) => (
+                <li key={idx}>{step}</li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="mt-4 space-y-1 text-sm md:text-base text-gray-700">
+            <p><strong>Prep Time:</strong> {recipe.preparationTime}</p>
+            <p><strong>Cook Time:</strong> {recipe.cookingTime}</p>
+            <p><strong>Serving Size:</strong> {recipe.servingSize}</p>
+          </div>
+
+          <div className="mt-4">
+            <h4 className="font-semibold text-lg">📌 Notes:</h4>
+            <p>{recipe.notes}</p>
+          </div>
+        </CardContent>
+        <CardFooter>
+          {login && !isSaved && (
+            <Button onClick={saveRecipe}>Save</Button>
+          )}
+          {isSaved && (
+            <Button disabled variant="outline">Saved</Button>
+          )}
+        </CardFooter>
+      </Card>
+    </div>
+  )}
+</div>
+
  
 
       <div className="flex flex-col items-center justify-center p-12 bg-amber-100">

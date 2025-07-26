@@ -5,6 +5,7 @@ import { useEffect,useState } from "react";
 import { useRecipeContext } from '../context/RecipeContext';
 import { useUserContext } from "../context/UserContext";
 import { Skeleton } from "@/components/ui/skeleton";
+
 export default function RecipesPage(){
 
     const { recipes, setRecipes } = useRecipeContext(); 
