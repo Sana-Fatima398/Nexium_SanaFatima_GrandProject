@@ -142,35 +142,50 @@ export default function Home() {
           <CardDescription className="text-sm md:text-base">{recipe.description}</CardDescription>
         </CardHeader>
         <CardContent>
-          <div>
-            <h3 className="font-semibold text-lg">🍽 Ingredients:</h3>
-            <ul className="list-disc ml-5 text-sm md:text-base">
-              {recipe.ingredients.map((item, idx) => (
-                <li key={idx}>{item}</li>
-              ))}
-            </ul>
-          </div>
+  {recipe.ingredients.length > 0 && (
+    <div>
+      <h3 className="font-semibold text-lg">🍽 Ingredients:</h3>
+      <ul className="list-disc ml-5 text-sm md:text-base">
+        {recipe.ingredients.map((item, idx) => (
+          <li key={idx}>{item}</li>
+        ))}
+      </ul>
+    </div>
+  )}
 
-          <div className="mt-4">
-            <h3 className="font-semibold text-lg">👨‍🍳 Instructions:</h3>
-            <ol className="list-decimal ml-5 text-sm md:text-base">
-              {recipe.instructions.map((step, idx) => (
-                <li key={idx}>{step}</li>
-              ))}
-            </ol>
-          </div>
+  {recipe.instructions.length > 0 && (
+    <div className="mt-4">
+      <h3 className="font-semibold text-lg">👨‍🍳 Instructions:</h3>
+      <ol className="list-decimal ml-5 text-sm md:text-base">
+        {recipe.instructions.map((step, idx) => (
+          <li key={idx}>{step}</li>
+        ))}
+      </ol>
+    </div>
+  )}
 
-          <div className="mt-4 space-y-1 text-sm md:text-base text-gray-700">
-            <p><strong>Prep Time:</strong> {recipe.preparationTime}</p>
-            <p><strong>Cook Time:</strong> {recipe.cookingTime}</p>
-            <p><strong>Serving Size:</strong> {recipe.servingSize}</p>
-          </div>
+  {(recipe.preparationTime || recipe.cookingTime || recipe.servingSize) && (
+    <div className="mt-4 space-y-1 text-sm md:text-base text-gray-700">
+      {recipe.preparationTime && (
+        <p><strong>Prep Time:</strong> {recipe.preparationTime}</p>
+      )}
+      {recipe.cookingTime && (
+        <p><strong>Cook Time:</strong> {recipe.cookingTime}</p>
+      )}
+      {recipe.servingSize && (
+        <p><strong>Serving Size:</strong> {recipe.servingSize}</p>
+      )}
+    </div>
+  )}
 
-          <div className="mt-4">
-            <h4 className="font-semibold text-lg">📌 Notes:</h4>
-            <p>{recipe.notes}</p>
-          </div>
-        </CardContent>
+  {recipe.notes && (
+    <div className="mt-4">
+      <h4 className="font-semibold text-lg">📌 Notes:</h4>
+      <p>{recipe.notes}</p>
+    </div>
+  )}
+</CardContent>
+
         <CardFooter>
           {login && !isSaved && (
             <Button onClick={saveRecipe}>Save</Button>
@@ -186,48 +201,18 @@ export default function Home() {
 
  
 
-      <div className="flex flex-col items-center justify-center p-12 bg-amber-100">
-        <h1 className="font-shadow text-5xl mb-4">Popular Recipes</h1>
-        <p className="text-gray-600 mb-8">Explore our collection of popular recipes.</p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-48">         
-          <Card className="h-96 w-72">
-          <CardHeader>
-          <CardTitle><img src="/food-pizza-wallpaper-preview.jpg"/></CardTitle>
-            <CardAction></CardAction>
-          </CardHeader>
-          <CardContent>
-            <p>Card Content</p>
-          </CardContent>
-          <CardFooter>
-            <p>Card Footer</p>
-          </CardFooter>
-      </Card >
-        <Card className="h-96 w-72">
-          <CardHeader>
-       <CardTitle><img src="/food-pizza-wallpaper-preview.jpg"/></CardTitle>
-            <CardAction></CardAction>
-          </CardHeader>
-          <CardContent>
-            <p>Card Content</p>
-          </CardContent>
-          <CardFooter>
-            <p>Card Footer</p>
-          </CardFooter>
-      </Card>
-        <Card className="h-96 w-72">
-          <CardHeader>
-            <CardTitle><img src="/food-pizza-wallpaper-preview.jpg"/></CardTitle>
-           
-            <CardAction></CardAction>
-          </CardHeader>
-          <CardContent>
-            <p>Card Content</p>
-          </CardContent>
-          <CardFooter>
-            <p>Card Footer</p>
-            </CardFooter>
-          </Card>
+      <div className="flex flex-row items-center justify-center p-12 bg-amber-100">
+
+        <div className="h-4/5">
+        <div className="w-1/2">
+            <h1 className="font-shadow text-5xl mb-4 text-center">Start Saving Your Recipes!</h1>
+            <p className="text-gray-600 mb-8 text-center text-lg">Easily bookmark, view, and manage your favorite recipes all in one place.</p>
         </div>
+        <div className="w-1/2"></div>
+        </div>
+        <div className="w-1/5"></div>
+         
+           
       </div>
 
      <div className="flex flex-col gap-16 items-center justify-center p-10">

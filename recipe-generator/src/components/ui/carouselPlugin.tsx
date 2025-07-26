@@ -24,12 +24,12 @@ export function CarouselPlugin() {
       onMouseLeave={plugin.current.reset}
     >
       <CarouselContent>
-        {Array.from({ length: 5 }).map((_, index) => (
+        {Array.from({ length: 2 }).map((_, index) => (
           <CarouselItem key={index}>
             <div className="p-1">
              
                 <img
-                    src={`/image3 .png`}
+                    src={`/image${index+1}.png`}
                     alt={`Image ${index + 1}`}
                     className="object-cover rounded-lg"
                   />
