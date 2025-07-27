@@ -2,6 +2,7 @@
 "use client";
 import { CarouselPlugin } from "@/components/ui/carouselPlugin";
 import { Button } from "@/components/ui/button";
+import  CookingAnimation from '@/components/ui/cookingAnimation';
 import axios from 'axios';
 import { useEffect } from "react";
 import {
@@ -17,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import React, { useState } from "react";
 import { useUserContext } from "@/app/context/UserContext";
 import { parseRecipe, ParsedRecipe } from "@/app/utils/parseRecipe";
+import LoadingAnimation from "@/components/ui/loadingAnimation";
 
 
 
@@ -90,14 +92,14 @@ export default function Home() {
     <div className="flex flex-col">
   <div className="flex flex-col md:flex-row items-center md:items-start max-w-6xl mx-auto px-4 py-8 gap-10">
   {/* Left: Carousel */}
-  <div className="w-full md:w-1/2 flex justify-center md:justify-start">
+  <div className="w-full md:w-1/2 flex justify-center md:justify-start md:mt-5">
     <CarouselPlugin />
   </div>
 
   {/* Right: Headings */}
-  <div className="w-full md:w-1/2 text-center md:text-left">
-    <h1 className="font-shadow text-4xl md:text-6xl text-amber-800 mb-4">Dish Genie</h1>
-    <h2 className="font-shadow text-2xl md:text-4xl">Generate a recipe using AI</h2>
+  <div className="w-full md:w-1/2 text-center md:text-left md:ms-8">
+    <h1 className="font-shadow text-4xl md:text-7xl text-amber-800 mb-4 md:my-16  font-bold">Dish Genie</h1>
+    <h2 className="font-shadow text-3xl md:text-5xl">Generate a recipe using AI</h2>
   </div>
 </div>
 
@@ -105,7 +107,7 @@ export default function Home() {
 
 <h1 className="font-shadow text-4xl md:text-5xl text-center mt-10">Write your prompt</h1>
 
-<div className="flex flex-col items-center justify-center bg-amber-100 mx-4 md:mx-14 my-10 p-6 md:p-8 rounded-lg">
+<div className="flex flex-col items-center justify-center bg-amber-100 mx-4 md:mx-14 mt-10 p-6 md:p-8 rounded-lg">
   <form onSubmit={handleSubmit} className="w-full max-w-5xl">
     <div className="flex flex-col md:flex-row gap-4 md:gap-6 w-full">
       <Input
@@ -122,19 +124,23 @@ export default function Home() {
       </Button>
     </div>
   </form>
+  
 </div>
 
+<div className="flex flex-col justify-center items-center w-full">
 
-    <div className="flex flex-col items-center justify-center bg-amber-100 mx-0 md:mx-0 my-10 p-6 md:p-3 rounded-lg w-full">
+     {loading && (<div className="w-1/2 h-1/2">
+       <LoadingAnimation/>
+    </div>
+    )}
+</div>
+    <div className="flex flex-col items-center justify-center mx-0 md:mx-14 my-10  rounded-lg">
 
-  {/* Show progress bar only while loading */}
-  {loading && (
-    <div className="progress-bar w-[60%] mt-5 h-2 bg-amber-300 rounded animate-pulse" />
-  )}
+ 
 
   {/* Show result only if not loading and result exists */}
-  {result && !loading && recipe && (
-    <div className="m-0 md:m-0 p-0 md:p-0 w-full max-w-5xl animate-fade-in">
+  {result && recipe && (
+    <div className="m-0 md:m-0 p-6 md:p-10 w-full max-w-5xl  bg-amber-100 animate-fade-in  rounded-lg">
       <Card className="mt-2 w-full">
         <CardHeader>
           <CardDescription>{recipe.intro}</CardDescription>
@@ -201,39 +207,38 @@ export default function Home() {
 
  
 
-      <div className="flex flex-row items-center justify-center p-12 bg-amber-100">
+     <div className="flex flex-col-reverse md:flex-row items-center justify-center p-6 md:p-12 bg-amber-100 md:mx-14 md:mt-20 md:rounded-4xl md:shadow-xl">
+  {/* Text Section */}
+  <div className="w-full md:w-1/2 text-center md:text-left md:ms-16">
+    <h1 className="font-shadow text-3xl md:text-5xl mb-4 font-bold text-amber-800">Start Saving Your Recipes!</h1>
+    <p className="text-gray-600 mb-6 text-lg md:text-xl">
+      Easily bookmark, view, and manage your favorite recipes all in one place.
+    </p>
+  </div>
 
-        <div className="h-4/5">
-        <div className="w-1/2">
-            <h1 className="font-shadow text-5xl mb-4 text-center">Start Saving Your Recipes!</h1>
-            <p className="text-gray-600 mb-8 text-center text-lg">Easily bookmark, view, and manage your favorite recipes all in one place.</p>
-        </div>
-        <div className="w-1/2"></div>
-        </div>
-        <div className="w-1/5"></div>
-         
-           
-      </div>
+  {/* Image Section */}
+  <div className="w-full md:w-1/2 flex justify-center mb-6 md:mb-0">
+    <img src="/cutlery.png" alt="cooking icon" className="w-48 md:w-44 lg:w-60" />
+  </div>
+</div>
+
+ <div className="flex flex-col-reverse md:flex-row items-center justify-center p-6 my-14 md:p-12 bg-amber-100 md:mx-14 md:rounded-4xl md:shadow-xl md:my-24">
+  {/* Text Section */}
+  <div className="w-full md:w-1/2 text-center md:text-left md:ms-16">
+    <h1 className="font-shadow text-3xl md:text-5xl mb-4 font-bold text-amber-800">Personalise it</h1>
+    <p className="text-gray-600 mb-6 text-lg md:text-xl">
+      Personalize it by adding your own events — whether it is a wedding, Eid, Christmas, or anything special!
+    </p>
+  </div>
+
+  {/* Image Section */}
+  <div className="w-full md:w-1/2 flex justify-center mb-6 md:mb-0">
+    <img src="/cal.png" alt="cooking icon" className="w-48 md:w-44 lg:w-60" />
+  </div>
+</div>
+
 
      <div className="flex flex-col gap-16 items-center justify-center p-10">
-
-  {/* Section 1: Personalized Heading + Image */}
-  <div className="flex flex-col md:flex-row items-center justify-center gap-0 w-full max-w-5xl my-10">
-    <div className="m-10">
-          <h1 className="font-shadow text-5xl md:text-6xl text-amber-800 font-semibold text-center md:text-left m-5">
-      Personalise it
-    </h1>
-    <p className="font-shadow text-3xl m-5">Personalize it by adding your own events — whether it is a wedding, Eid, Christmas, or anything special!</p>
-
-    </div>
-    <div className="w-3/4 md:w-2/5">
-      <img
-        src="/cale.png"
-        alt="Caleb Image"
-        className="w-full rounded-xl shadow-xl hover:scale-105 transition duration-500"
-      />
-    </div>
-  </div>
 
   {/* Section 2: CTA + Emojis */}
   <div className="flex flex-row md:flex-row items-center justify-center gap-8 w-full max-w-4xl my-10">
@@ -248,6 +253,7 @@ export default function Home() {
      <div>🔥</div>
      <div>🥗</div> 
     </div>
+     <CookingAnimation/>
   </div>
 
 </div>

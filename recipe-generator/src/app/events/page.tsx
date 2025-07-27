@@ -22,6 +22,7 @@ import {
 import Calendar18 from "@/components/calendar-18";
 import { useRecipeContext } from "../context/RecipeContext";
 import { useUserContext } from "../context/UserContext";
+import Image from "next/image";
 
 
 
@@ -273,7 +274,7 @@ const handleRemoveRecipeField = (index: number) => {
       <div className="mt-10">
         <h2 className="text-2xl font-semibold mb-4">Added Events</h2>
         {userEvents.length === 0 ? (
-          <p className="text-muted-foreground">No events yet.</p>
+          <div className="flex flex-col justify-center items-center gap-5 font-shadow"><div className="text-2xl md:4xl">Your events will be shown here.</div><Image src="/event.png" alt="event image" width={180} height={180}/></div>
         ) : (
           <Accordion type="multiple" className="w-full space-y-2">
             {userEvents.map((event, idx) => (

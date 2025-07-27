@@ -94,23 +94,31 @@ export default function RecipesPage(){
                     ))}
                 </div>
             ) : (
-                <div className="text-center font-shadow text-5xl my-10 py-6">
-                    <div className="mb-5">
+                <div className="flex flex-col justify-center items-center text-center py-6 my-5` font-shadow text-2xl md:text-5xl gap-4">
+                    <div className="">
                         Not Saved any recipe until now.
                     </div>
-                    <div className="mb-3">
+                    <div className="">
                         Then start creating using <Link href="/" className="bg-gradient-to-r from-amber-400 to-amber-600 bg-clip-text text-transparent font-bold">AI</Link>
                     </div>
+                    <div className="">
+                    <img src="chef.png" className="w-32 h-32 md:w-60 md:h-60"/>
+                    </div>
+                    
                 </div>
             )
         ) : (
-            <div className="text-center py-6 my-10 font-shadow text-5xl">
-                <div className="mb-3">
+            <div className="flex flex-col justify-center items-center text-center py-6 my-10 font-shadow text-2xl md:text-5xl gap-4">
+                <div className="">
                     Your saved recipes will be shown here
                 </div>
-                <div className="mb-3">
+                <div className="">
                     <a href="/account/signup" className="text-amber-500">Sign in to continue</a>
                 </div>
+                <div className="">
+                 <img src="sticker.png" className="w-32 h-32 md:w-60 md:h-60"/>
+                </div>
+                 
             </div>
         )}
 

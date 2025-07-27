@@ -6,6 +6,8 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { createBrowClient } from '../../../../lib/supabase-browser';
 import { useUserContext } from '../../context/UserContext';
+import CookingAnimation from '@/components/ui/cookingAnimation';
+import SignOutAnimation from '@/components/ui/signOutAnimation';
 
 export default function SignUpPage(){
 
@@ -72,9 +74,10 @@ export default function SignUpPage(){
                 const { error } = await supabase.auth.exchangeCodeForSession(code);
                 if (!error) {
                     window.history.replaceState({}, document.title, '/account/signup'); 
+                    await new Promise((r) => setTimeout(r, 2000));
                     fetchUser();
                 } else {
-                    console.error("Session exchange failed:", error.message);
+                    console.log("Session exchange failed:", error.message);
                 }
                 } else {
                     fetchUser(); 
@@ -87,31 +90,51 @@ export default function SignUpPage(){
 
     return (
         <div className='flex flex-col items-center justify-center'>
-            {login ? (<div className='flex flex-col bg-amber-100 rounded-lg w-1/2 my-16 gap-5 p-8'>
-                <p>your are alreaady signed in:{user?.email}</p>
-                <Button className='mx-auto w-1/2 bg-amber-600 hover:bg-amber-500' onClick={handleLogout}>sign out</Button>
-            </div>):(
-                <div className='w-1/2 my-16'>
-                   <form onSubmit={handleSubmit} className='w-full'>
-                <div className='flex flex-col bg-amber-100 rounded-lg w-full mx-auto p-7 gap-7'>
-                <></>
-                <div className="w-full items-center">
-                    <Label htmlFor="email" className='pb-4'>Email</Label>
-                    <Input 
-                        type="email" 
-                        id="email" 
-                        placeholder="Email" 
-                        value={email} 
-                        onChange={(e)=>setEmail(e.target.value)}/>
+            {login ? (
+                <div className='flex flex-col my-10 shadow-2xl md:flex-row w-full md:w-3/4 p-4'>
+                     <div className='w-full md:w-1/2'><SignOutAnimation /></div>
+                    <div className='flex flex-col bg-amber-100 rounded-lg w-full md:w-1/2 md:m-4 p-7 gap-7'>
+                        
+                        <div  className='font-shadow text-2xl md:text-4xl p-3 leading-relaxed'>You are signed in as: {user?.email}</div>
+
+                        <Button className='mx-auto w-1/2 bg-amber-600 hover:bg-amber-500' onClick={handleLogout}>sign out</Button>
+                    </div>
+                    
+                   
+                   
                 </div>
-                <Button className="bg-amber-600 w-full hover:bg-amber-700" >Sign Up</Button>
+                
+                ):(
+                <div className='flex flex-col my-10 shadow-2xl md:flex-row w-full md:w-3/4 p-4'>
+                 <div className='w-full md:w-1/2'><CookingAnimation /></div>
+                <div className='flex flex-col bg-amber-100 rounded-lg w-full md:w-1/2 md:m-4 p-7 gap-7'>
+                 {result ? (
+                        <div className='font-shadow text-2xl md:text-5xl p-5 leading-relaxed'>{result}</div>
+                        ) : (
+                        <form onSubmit={handleSubmit} className=''>
+                            <div className="w-full items-center">
+                            <Label htmlFor="email" className='flex flex-col font-shadow text-2xl md:text-4xl p-3'>
+                                <div>Email</div>
+                                <div className='text-lg md:text-2xl'>Sign Up by Email only</div>
+                            </Label>
+                            <Input 
+                                type="email" 
+                                id="email" 
+                                placeholder="abc@gmail.com" 
+                                value={email} 
+                                className='mt-7'
+                                onChange={(e) => setEmail(e.target.value)}
+                            />
+                            </div>
+                            <div className="flex flex-row justify-center items-center">
+                            <Button className="bg-amber-600 w-2/6 hover:bg-amber-500 my-4">Sign Up</Button>    
+                            </div> 
+                        </form>
+                        )}
+
                 </div>
-                </form>
-                <div className='mb-16'>
-                {result !== '' && (
-                    <div>{result}</div>
-                )}
-                </div>
+                
+              
                 </div>
             )}
 
