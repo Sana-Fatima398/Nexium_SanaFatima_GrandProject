@@ -5,9 +5,8 @@ import { NextRequest, NextResponse } from "next/server";
 export async function POST(request: NextRequest){
     try{
         await connectMongo();
-        const {email, name, date, time} = await request.json();
-        console.log(email,name,date,time);
-        const newEvent = new Event({email,name,date,time,recipes:[]})
+        const {email, name, date, time, recipes} = await request.json();
+        const newEvent = new Event({email,name,date,time,recipes})
         await newEvent.save();
        
 

@@ -74,7 +74,7 @@ export default function SignUpPage(){
                 const { error } = await supabase.auth.exchangeCodeForSession(code);
                 if (!error) {
                     window.history.replaceState({}, document.title, '/account/signup'); 
-                    await new Promise((r) => setTimeout(r, 2000));
+                    await new Promise((r) => setTimeout(r, 1000));
                     fetchUser();
                 } else {
                     console.log("Session exchange failed:", error.message);

@@ -28,8 +28,10 @@ export default function Home() {
   const [result, setResult] = useState("");
   const [loading, setLoading] = useState(false); 
   const [isSaved, setIsSaved] = useState(false);
-  
+  const [savingLoading, setSavingLoading] = useState(false);
+
   const [recipe, setRecipe] = useState<ParsedRecipe | null>(null);
+  const n8n_url = process.env.NEXT_PUBLIC_N8N_URL!;
 
   const { user, login } = useUserContext();
 
@@ -37,13 +39,13 @@ export default function Home() {
 
     e.preventDefault();
     if(prompt === ''){
-      alert("Add prompy first");
+      alert("Add prompt first");
       return
     }
     setLoading(true);
-    const pointsToNote =  'The recipe that you produce should be a json object { "intro": string, "name": string,"description":string,"ingredients":string[],"instructions": string[], "servingSize": string, "cookingTime": string, "preparationTime": string, "notes": string }. If the prompt is wrong, unclear just response politely that they should enter the prompt clearly.';
+    const pointsToNote =  "If the user's prompt is wrong or unclear, respond with the best possible interpretation and place the output in the 'intro' field.";
     try{
-      const response = await axios.post("http://localhost:5678/webhook/8585b14b-bd38-49c8-bb1c-9d88fc6912c5",{"query":prompt,"pointsToNote":pointsToNote});
+      const response = await axios.post(n8n_url,{"query":prompt,"pointsToNote":pointsToNote});
       console.log('Workflow triggered:', response.data);
      
       const rawRecipe = response.data;
@@ -51,6 +53,7 @@ export default function Home() {
       console.log(parsed)
       setResult(rawRecipe);
       setRecipe(parsed);
+      setIsSaved(false);
 
       } catch (error) {
       console.error('Error triggering workflow:', error);
@@ -64,12 +67,7 @@ export default function Home() {
         alert("Missing recipe or user info.");
         return;
       }
-
-      console.log(user.email);
-      console.log(prompt);
-      console.log(recipe);
-      
-
+      setSavingLoading(true); 
       const res = await axios.post('/api/recipe/save', {
         email: user.email,
         prompt: prompt, 
@@ -86,6 +84,9 @@ export default function Home() {
       console.error('Error saving recipe:', error);
       alert('Failed to save recipe. Please check the console for details.');
     }
+    finally {
+    setSavingLoading(false); 
+  }
   };
 
   return (
@@ -143,8 +144,8 @@ export default function Home() {
     <div className="m-0 md:m-0 p-6 md:p-10 w-full max-w-5xl  bg-amber-100 animate-fade-in  rounded-lg">
       <Card className="mt-2 w-full">
         <CardHeader>
-          <CardDescription>{recipe.intro}</CardDescription>
-          <CardTitle className="text-xl md:text-3xl">{recipe.name}</CardTitle>
+          <CardDescription >{recipe.intro}</CardDescription>
+          <CardTitle className="text-xl md:text-3xl font-bold font-shadow">{recipe.name}</CardTitle>
           <CardDescription className="text-sm md:text-base">{recipe.description}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -193,12 +194,20 @@ export default function Home() {
 </CardContent>
 
         <CardFooter>
-          {login && !isSaved && (
-            <Button onClick={saveRecipe}>Save</Button>
-          )}
-          {isSaved && (
-            <Button disabled variant="outline">Saved</Button>
-          )}
+              {login && !isSaved && (
+        savingLoading ? (
+          <div className="w-full md:w-auto mt-4">
+           <div className="progress-bar" />
+          </div>
+        ) : (
+          <Button className=" bg-amber-600 hover:bg-amber-500" onClick={saveRecipe}>Save</Button>
+        )
+      )}
+
+      {isSaved && (
+        <Button disabled variant="outline">Saved</Button>
+      )}
+
         </CardFooter>
       </Card>
     </div>

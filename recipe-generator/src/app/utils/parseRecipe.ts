@@ -10,43 +10,16 @@ export type ParsedRecipe = {
   notes: string;
 };
 
-export function parseRecipe(str: string): ParsedRecipe {
-  str = str.replace(/\r\n/g, "\n").trim();
-
-  const defaultRecipe: ParsedRecipe = {
-    intro: str,
-    name: "",
-    description: "",
-    ingredients: [],
-    instructions: [],
-    servingSize: "",
-    cookingTime: "",
-    preparationTime: "",
-    notes: "",
+export function parseRecipe(data: Partial<ParsedRecipe>): ParsedRecipe {
+  return {
+    intro: typeof data.intro === "string" ? data.intro : "",
+    name: typeof data.name === "string" ? data.name : "",
+    description: typeof data.description === "string" ? data.description : "",
+    ingredients: Array.isArray(data.ingredients) ? data.ingredients : [],
+    instructions: Array.isArray(data.instructions) ? data.instructions : [],
+    servingSize: typeof data.servingSize === "string" ? data.servingSize : "",
+    cookingTime: typeof data.cookingTime === "string" ? data.cookingTime : "",
+    preparationTime: typeof data.preparationTime === "string" ? data.preparationTime : "",
+    notes: typeof data.notes === "string" ? data.notes : "",
   };
-
-  // Extract JSON block
-  const jsonMatch = str.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
-  if (!jsonMatch) {
-    return defaultRecipe;
-  }
-
-  try {
-    const jsonStr = jsonMatch[1].trim();
-    const recipeData = JSON.parse(jsonStr);
-
-    return {
-      intro: str.slice(0, jsonMatch.index).trim(),
-      name: recipeData.name || "",
-      description: recipeData.description || "",
-      ingredients: Array.isArray(recipeData.ingredients) ? recipeData.ingredients : [],
-      instructions: Array.isArray(recipeData.instructions) ? recipeData.instructions : [],
-      servingSize: recipeData.servingSize || "",
-      cookingTime: recipeData.cookingTime || "",
-      preparationTime: recipeData.preparationTime || "",
-      notes: recipeData.notes || "",
-    };
-  } catch (error) {
-    return defaultRecipe;
-  }
 }

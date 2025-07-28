@@ -41,10 +41,15 @@ export default function EventsPage() {
   const [date, setDate] = useState<Date | undefined>(undefined)
   const [time, setTime] = useState("10:30:00")
   const [eventName, setEventName] = useState("")
+  
   const { recipes, setRecipes } = useRecipeContext();
+  const [selectedRecipes, setSelectedRecipes] = useState([{ _id: "", name: "" }]);
+
   const [userEvents, setUserEvent] = useState<Event[]>([]);
   const [events, setEvents] = useState<Event | undefined>(undefined);
-  const {user} = useUserContext();
+  const {user, login} = useUserContext();
+
+  const [eventLoading, setEventLoading] = useState(true);
 
   useEffect(() => {
     
@@ -64,14 +69,10 @@ export default function EventsPage() {
                 console.error("Error fetching recipes:", error);
             } 
         };
-
-   
-    
-
-  }, [setRecipes]);
-
-     const fetchEvents = async () =>{
+        fetchRecipes();
+      const fetchEvents = async () =>{
         if (!user?.email) return;
+        setEventLoading(true);
         try{
           const res = await fetch("api/event/read",{
             method:"POST",
@@ -88,7 +89,15 @@ export default function EventsPage() {
         {
           console.error("Error fetching events:", error);
         }
+        finally{
+          setEventLoading(false);
+        }
       }
+    fetchEvents();
+
+  }, [setRecipes]);
+
+    
 
   const handleAddEvent = async () => {
     try{
@@ -97,13 +106,13 @@ export default function EventsPage() {
        console.log(user?.email);
        console.log(date);
        console.log(time);
-       console.log(recipes)
+       console.log(selectedRecipes)
       const res = await axios.post('/api/event/add', {
         email: user?.email,
         name: eventName,
         date: date,
         time: time, 
-        recipes,      
+        recipes: selectedRecipes
       });
       
      if (res.status === 200) {
@@ -123,27 +132,20 @@ export default function EventsPage() {
     }
   }
 
- const handleRecipeChange = (index: number, value: string) => {
-  const updated = [...recipes];
-  updated[index] = { ...updated[index], name: value }; // update only name
-  setRecipes(updated);
+const handleRecipeChange = (index: number, recipeId: string) => {
+  const recipe = recipes.find((r) => r._id === recipeId);
+  if (!recipe) return;
+  const updated = [...selectedRecipes];
+  updated[index] = { _id: recipe._id, name: recipe.name };
+  setSelectedRecipes(updated);
 };
 
 const handleAddRecipeField = () => {
-  setRecipes(prev => [...prev,  {
-      _id: "",
-      name: "",
-      email: "",         // required
-      prompt: "",        // required
-      ingredients: [],
-      instructions: []
-    }]); // new empty recipe
+  setSelectedRecipes((prev) => [...prev, { _id: "", name: "" }]);
 };
 
 const handleRemoveRecipeField = (index: number) => {
-  if (recipes.length > 1) {
-    setRecipes(prev => prev.filter((_, i) => i !== index));
-  }
+  setSelectedRecipes((prev) => prev.filter((_, i) => i !== index));
 };
 
 
@@ -156,11 +158,26 @@ const handleRemoveRecipeField = (index: number) => {
           Your Events
         </h1>
       </div>
+       {!login ? (
 
-
+      <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
+        <div className="w-full p-10 text-3  xl md:text-5xl font-shadow text-center tracking-wider leading-relaxed">
+          Login to personalize the recipes according to your temper
+        </div>
+        <Image
+          src="/event.png"
+          alt="Login illustration"
+          width={240}
+          height={240}
+        />
+      </div>
+    ):(
+      <>
       <div className="flex flex-col lg:flex-row gap-16 border rounded-lg md:p-6 sm:p-2 mx-auto shadow-md">
 
-        <div className="flex flex-col gap-6 flex-1 mx-auto md:p-4">
+
+
+        <div className="flex flex-col gap-6 flex-1 mx-5 my-5 p-4">
     
           <div className="flex flex-col gap-3">
             <Label>Event Name</Label>
@@ -187,34 +204,28 @@ const handleRemoveRecipeField = (index: number) => {
             </div>
             
             <div className="flex flex-col gap-4 w-full">
-            {recipes.map((recipe, index) => (
-              <div key={index} className="flex flex-row items-center gap-2 w-full">
-                <select
-                  value={recipe.name}
-                  onChange={(e) =>
-                    handleRecipeChange(index, e.target.value)
-                  }
-                  className="w-full border p-2 rounded-md"
-                >
-                  <option value="">Select a recipe</option>
-                  {recipes.map((recipe) => (
-                    <option key={recipe._id} value={recipe.name}>
-                      {recipe.name}
-                    </option>
-                  ))}
-                </select>
-               
-                {recipes.length > 1 && (
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => handleRemoveRecipeField(index)}
-                  >
-                    <MinusCircle className="w-5 h-5 text-red-500" />
-                  </Button>
-                )}
-              </div>
-            ))}
+            {selectedRecipes.map((recipe, index) => (
+  <div key={index} className="flex flex-row items-center gap-2 w-full">
+    <select
+      value={recipe._id}
+      onChange={(e) => handleRecipeChange(index, e.target.value)}
+      className="w-full border p-2 rounded-md"
+    >
+      <option value="">Select a recipe</option>
+      {recipes.map((option) => (
+        <option key={option._id} value={option._id}>
+          {option.name}
+        </option>
+      ))}
+    </select>
+    {selectedRecipes.length > 1 && (
+      <Button type="button" variant="ghost" onClick={() => handleRemoveRecipeField(index)}>
+        <MinusCircle className="w-5 h-5 text-red-500" />
+      </Button>
+    )}
+  </div>
+))}
+
          
             </div>
                 
@@ -258,10 +269,11 @@ const handleRemoveRecipeField = (index: number) => {
               />
             </div>
           </div>
-
-          <Button className="w-fit mt-2" onClick={handleAddEvent}>
+          <div className="flex flex-col justify-center items-center">
+          <Button className="w-1/2 mt-7 bg-amber-600 hover:bg-amber-500" onClick={handleAddEvent}>
             Add Event
           </Button>
+          </div>
         </div>
 
   <div className="flex-1 w-full flex justify-center items-center">
@@ -270,37 +282,55 @@ const handleRemoveRecipeField = (index: number) => {
 
       </div>
 
-      {user?.email !== '' && <div><Button onClick={fetchEvents}></Button></div>}
-      <div className="mt-10">
-        <h2 className="text-2xl font-semibold mb-4">Added Events</h2>
-        {userEvents.length === 0 ? (
-          <div className="flex flex-col justify-center items-center gap-5 font-shadow"><div className="text-2xl md:4xl">Your events will be shown here.</div><Image src="/event.png" alt="event image" width={180} height={180}/></div>
-        ) : (
-          <Accordion type="multiple" className="w-full space-y-2">
-            {userEvents.map((event, idx) => (
-              <AccordionItem key={idx} value={`item-${idx}`}>
-                <AccordionTrigger>
-                  {event.name}
-                </AccordionTrigger>
-                <AccordionContent>
-                  <p>
-                    <strong>Time:</strong> {event.time}
-                  </p>
-                  <p>
-                    <strong>Date:</strong> {event.time}
-                  </p>
-                  <p>
-                    <strong>Recipes:</strong>{" "}
-                    {event.recipes.map(r => r.name).join(", ") || "None"}
-
-                  </p>
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        )}
+    
+      <div className="mt-20">
+        <div className="w-full mx-auto my-8 p-3 bg-amber-100 rounded-lg">  <h2 className="text-4xl font-semibold m-6 font-shadow">Added Events</h2></div>
+        {eventLoading ? (
+  // Show loading skeleton
+ <div className="w-full p-8 space-y-7">
+    {[...Array(3)].map((_, index) => (
+      <div
+        key={index}
+        className="w-full bg-amber-100 h-28 rounded-xl shadow-md p-4 animate-pulse"
+      >
+        <div className="h-6 bg-amber-50 rounded w-1/3 mb-2" />
+        <div className="h-4 bg-amber-50 rounded w-2/3 mb-1" />
+        <div className="h-4 bg-amber-50 rounded w-1/2" />
       </div>
-      
+    ))}
+  </div>
+) : userEvents.length === 0 ? (
+  // No events message
+  <div className="flex flex-col justify-center items-center gap-5 font-shadow">
+    <div className="text-2xl md:text-3xl">Your events will be shown here.</div>
+    <Image src="/event.png" alt="event image" width={180} height={180} />
+  </div>
+) : (
+  // Events accordion
+  <Accordion type="multiple" className="w-full p-5 space-y-4">
+    {userEvents.map((event, idx) => (
+      <AccordionItem className="bg-amber-100 p-3 rounded-lg" key={idx} value={`item-${idx}`}>
+        <AccordionTrigger className="font-shadow tracking-wider md:text-3xl text-2xl ps-8">{event.name}</AccordionTrigger>
+        <AccordionContent className="ps-8 text-md">
+          <p>
+            <strong>Date:</strong>{" "}
+            {new Date(event.date).toLocaleDateString()}
+          </p>
+          <p>
+            <strong>Time:</strong> {event.time}
+          </p>
+          <p>
+            <strong>Recipes:</strong>{" "}
+            {event.recipes.map((r) => r.name).join(", ") || "None"}
+          </p>
+        </AccordionContent>
+      </AccordionItem>
+    ))}
+  </Accordion>
+)}
+
+      </div>
+      </>)}
     </div>
   )
 }
