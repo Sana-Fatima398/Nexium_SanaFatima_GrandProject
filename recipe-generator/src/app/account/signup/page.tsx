@@ -7,18 +7,21 @@ import { Button } from "@/components/ui/button";
 import { useUserContext } from '../../context/UserContext';
 import CookingAnimation from '@/components/ui/cookingAnimation';
 import SignOutAnimation from '@/components/ui/signOutAnimation';
+import { set } from 'mongoose';
 
 export default function SignUpPage(){
 
     const [email, setEmail] = useState('');
     const [result, setResult] = useState('');
+    const [loading, setLoading] = useState(false);
 
     const { user,setUser, login, setLogin } = useUserContext();
-
+    
 
     
     const handleSubmit = async(e: React.FormEvent) => {
         e.preventDefault();
+        setLoading(true);
         const response = await fetch('/api/auth/magic-link', {
             method: 'POST',
             headers: {
@@ -28,11 +31,12 @@ export default function SignUpPage(){
         });
 
         if (response.status === 200) {
-            setResult("Check your email for the magic link!");
-            // Handle successful signup
+            setResult("Check your email inbox for the link!");
+          
             console.log('Signup successful');
+            setLoading(false);
         } else {
-            // Handle error
+        
             console.log('Signup failed');
         }
     }
@@ -90,8 +94,11 @@ export default function SignUpPage(){
                             />
                             </div>
                             <div className="flex flex-row justify-center items-center">
+                                {!loading ? (
                             <Button className="bg-amber-600 w-2/6 hover:bg-amber-500 my-4">Sign Up</Button>    
+                                ):(<div className='progress-bar  my-4'></div>)}
                             </div> 
+
                         </form>
                         )}
 

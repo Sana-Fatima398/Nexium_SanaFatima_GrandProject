@@ -19,6 +19,7 @@ import { useUserContext } from "@/app/context/UserContext";
 import { parseRecipe, ParsedRecipe } from "@/app/utils/parseRecipe";
 import { createBrowClient } from '../../lib/supabase-browser';
 import LoadingAnimation from "@/components/ui/loadingAnimation";
+import TeaLoading from "@/components/ui/teaLoading";
 
 
 
@@ -114,6 +115,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
+     
   <div className="flex flex-col md:flex-row items-center md:items-start max-w-6xl mx-auto px-4 py-8 gap-10">
   {/* Left: Carousel */}
   <div className="w-full md:w-1/2 flex justify-center md:justify-start md:mt-5">

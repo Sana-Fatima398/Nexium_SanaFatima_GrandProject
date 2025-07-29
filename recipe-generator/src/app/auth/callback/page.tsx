@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { createBrowClient } from '../../../../lib/supabase-browser';
 import { useUserContext } from '@/app/context/UserContext';
+import TeaLoading from '@/components/ui/teaLoading';
 
 export default function CallbackPage() {
   const router = useRouter();
@@ -63,5 +64,10 @@ export default function CallbackPage() {
     };
   }, [router, setLogin, setUser]);
 
-  return <div>Signing you in...</div>;
+  return (
+    <div className=' flex flex-col w-full mx-auto px-auto my-16 items-center justify-center'>
+        <p className="text-5xl font-shadow">Signing you in...</p>
+        <div className="h-1/2 w-1/2"><TeaLoading/></div>
+      </div>
+    );
 }
