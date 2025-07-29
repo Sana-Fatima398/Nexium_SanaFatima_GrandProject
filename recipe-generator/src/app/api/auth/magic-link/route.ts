@@ -13,9 +13,10 @@ export async function POST(request: Request) {
 
     const { error } = await supabase.auth.signInWithOtp({
         email,
-          options: {
-            emailRedirectTo: 'http://localhost:3000/account/signup', 
-        }
+        options: {
+            shouldCreateUser: true,
+            emailRedirectTo: "http://localhost:3000/auth/callback", 
+        },
     });
 
     if (error) {

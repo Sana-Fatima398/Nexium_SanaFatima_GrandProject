@@ -43,49 +43,46 @@ export default function Recipe() {
 
   return (
     <div>
-        <div className="flex flex-col w-full relative overflow-hidden">
+       <div className="relative w-full flex flex-col min-h-screen">
+
   {/* Background Image Layer */}
   <img
-    src="/food-pizza-wallpaper-preview.jpg"
+    src="/test.jpg"
     alt="Background"
-    className="absolute top-0 left-0 w-full h-3/4 object-cover z-0"
+    className="absolute top-0 left-0 w-full h-5/6 object-cover z-0"
   />
-  <div className="absolute top-0 left-0 w-full h-3/4 bg-white/10 backdrop-blur-md z-10" />
+
+  {/* Gradient Overlay: Faded top and bottom */}
+  <div className="absolute top-0 left-0 w-full h-full z-10 pointer-events-none">
+    <div className="absolute top-0 w-full h-1/4 bg-gradient-to-b from-white via-transparent to-transparent" />
+    <div className="absolute bottom-0 w-full h-1/4 bg-gradient-to-t from-white via-transparent to-transparent" />
+    <div className="absolute inset-0 bg-white/0 backdrop-blur-xs" />
+  </div>
 
   {/* Foreground Content */}
-  <div className="relative z-20 flex flex-col md:flex-row w-full md:w-3/4 mx-auto mt-24 gap-8 p-3 bg-white/10 backdrop-blur-md rounded-lg">
-   
+  <div className="relative z-20 flex flex-col md:flex-row w-full  mx-auto mt-16 gap-8 p-8 bg-white/10 backdrop-blur-sm rounded-lg shadow-xl md:w-3/4">
 
     {/* Right - Details */}
-    <div className="flex flex-col w-full md:w-6/12 gap-4 p-4 bg-white/70 rounded-2xl shadow-md overflow-y-auto max-h-[34rem]">
+    <div className="flex flex-row w-full gap-4 p-12 bg-white/70 rounded-2xl shadow-md overflow-y-auto max-h-[34rem]">
       {/* First Section - Basic Details */}
-      <div className="flex flex-col gap-2">
-        <h2 className="text-2xl font-bold text-amber-700 font-shadow">{recipe.name}</h2>
-        <p className="text-sm"><strong>Prompt:</strong> <i>{recipe.prompt}</i></p>
-        <p className="text-xs italic text-gray-700">
+      <div className="flex flex-col gap-5 w-full ps-4 pt-4">
+        <h2 className=" text-2xl md:text-5xl font-bold text-amber-700 font-shadow">{recipe.name}</h2>
+        <p className="text-lg"><strong>Prompt:</strong> <i>{recipe.prompt}</i></p>
+        <p className="text-sm italic text-gray-700">
           Created on: {recipe.createdAt ? new Date(recipe.createdAt).toLocaleDateString() : "----"}
         </p>
       </div>
-
-      {/* Second Section - Time & Serving Details */}
-      <div className="flex flex-col gap-2 border-t pt-3 text-sm">
-        <p><strong>Prep Time:</strong> {recipe.preparationTime?.trim() || "----"}</p>
-        <p><strong>Cook Time:</strong> {recipe.cookingTime?.trim() || "----"}</p>
-        <p><strong>Serves:</strong> {recipe.servingSize?.trim() || "----"}</p>
+      <div className="w-1/2">
+        <img src="/dinner.png" className="w-3/4"/>
       </div>
-    </div>
- {/* Left - Image */}
-    <div className="bg-amber-300 w-full md:w-6/12 rounded-2xl overflow-hidden">
-      <img
-        src="/food-pizza-wallpaper-preview.jpg"
-        className="h-64 md:h-full w-full object-cover rounded-lg"
-        alt="Recipe"
-      />
+    
     </div>
 
+    
 
   </div>
 </div>
+
 
 
      {/* Intro & Description */}

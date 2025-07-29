@@ -2,7 +2,6 @@
 "use client";
 import { CarouselPlugin } from "@/components/ui/carouselPlugin";
 import { Button } from "@/components/ui/button";
-import  CookingAnimation from '@/components/ui/cookingAnimation';
 import axios from 'axios';
 import { useEffect } from "react";
 import {
@@ -18,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import React, { useState } from "react";
 import { useUserContext } from "@/app/context/UserContext";
 import { parseRecipe, ParsedRecipe } from "@/app/utils/parseRecipe";
+import { createBrowClient } from '../../lib/supabase-browser';
 import LoadingAnimation from "@/components/ui/loadingAnimation";
 
 
@@ -33,7 +33,30 @@ export default function Home() {
   const [recipe, setRecipe] = useState<ParsedRecipe | null>(null);
   const n8n_url = process.env.NEXT_PUBLIC_N8N_URL!;
 
-  const { user, login } = useUserContext();
+  const { user, setUser, login, setLogin } = useUserContext();
+
+  useEffect(() => {
+    async function fetchUser() {
+      const res = await fetch('/api/auth/user');
+      if (res.status === 200) {
+        const data = await res.json();
+        setLogin(true);
+        setUser(data.message);
+      } else {
+        setLogin(false);
+        setUser(undefined);
+      }
+    }
+
+    async function checkMagicLink() {
+      fetchUser();
+    }
+
+    checkMagicLink();
+   
+  }, [setLogin, setUser]);
+
+
 
   const handleSubmit = async (e: React.FormEvent)=>{
 
@@ -64,7 +87,7 @@ export default function Home() {
   const saveRecipe = async () => {
     try {
       if (!user?.email) {
-        alert("Missing recipe or user info.");
+        alert("You are not logged in. Please log in to save recipes.");
         return;
       }
       setSavingLoading(true); 
@@ -247,25 +270,7 @@ export default function Home() {
 </div>
 
 
-     <div className="flex flex-col gap-16 items-center justify-center p-10">
-
-  {/* Section 2: CTA + Emojis */}
-  <div className="flex flex-row md:flex-row items-center justify-center gap-8 w-full max-w-4xl my-10">
-    <div>
-    <p className="font-shadow text-5xl md:text-6xl text-center md:text-left font-semibold text-amber-800  my-2">
-      Do like and subscribe
-    </p>
-    <p className="font-shadow text-3xl my-5">Personalize it by adding your own events — whether it is a wedding, Eid, Christmas, or anything special!</p>
-</div>
-    <div className="bg-amber-400 text-white text-4xl md:text-5xl p-4 px-6 rounded-sm shadow-md animate-pulse flex flex-col gap-6">
-     <div>❤️</div>
-     <div>🔥</div>
-     <div>🥗</div> 
-    </div>
-     <CookingAnimation/>
-  </div>
-
-</div>
+   
 
 
     

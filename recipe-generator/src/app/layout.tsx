@@ -5,6 +5,7 @@ import { Navbar } from "@/components/ui/navbar";
 import { Shadows_Into_Light } from 'next/font/google';
 import { RecipeProvider } from "./context/RecipeContext";
 import { UserProvider } from "./context/UserContext";
+import { EventProvider } from "./context/EventContext";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -39,11 +40,11 @@ export default function RootLayout({
         <UserProvider>
           <RecipeProvider>
             <Navbar />
-            
+            <EventProvider>
             <main className="flex-grow">
             {children}
             </main>
-          
+            </EventProvider>
             <footer className="bg-amber-600 text-white py-4 mt-8 bottom-0">
             <div className="container mx-auto text-center">
               <p>&copy; {new Date().getFullYear()} Recipe Generator. All rights reserved.</p>    

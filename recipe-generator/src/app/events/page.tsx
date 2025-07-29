@@ -22,18 +22,8 @@ import {
 import Calendar18 from "@/components/calendar-18";
 import { useRecipeContext } from "../context/RecipeContext";
 import { useUserContext } from "../context/UserContext";
+import { useEventContext } from "../context/EventContext";
 import Image from "next/image";
-
-
-
-type Event = {
-  email: string;
-  name: string;
-  date: Date;
-  time: string;
-  recipes: [{_id:string, name:string}]
-  createdAt?: string;
-}
 
 
 export default function EventsPage() {
@@ -43,10 +33,10 @@ export default function EventsPage() {
   const [eventName, setEventName] = useState("")
   
   const { recipes, setRecipes } = useRecipeContext();
+  const { events, setEvents } = useEventContext();
+
   const [selectedRecipes, setSelectedRecipes] = useState([{ _id: "", name: "" }]);
 
-  const [userEvents, setUserEvent] = useState<Event[]>([]);
-  const [events, setEvents] = useState<Event | undefined>(undefined);
   const {user, login} = useUserContext();
 
   const [eventLoading, setEventLoading] = useState(true);
@@ -70,7 +60,8 @@ export default function EventsPage() {
             } 
         };
         fetchRecipes();
-      const fetchEvents = async () =>{
+    
+    const fetchEvents = async () =>{
         if (!user?.email) return;
         setEventLoading(true);
         try{
@@ -84,7 +75,7 @@ export default function EventsPage() {
             if (!res.ok) throw new Error("Failed to fetch events");
             const data = await res.json();
             console.log("Fetched events:", data);
-            setUserEvent(data);
+            setEvents(data);
         }catch(error)
         {
           console.error("Error fetching events:", error);
@@ -97,7 +88,28 @@ export default function EventsPage() {
 
   }, [setRecipes]);
 
+
+  
+    const handleDelete = async(id: string) =>{
+        
+        try {
+        const res = await fetch("/api/event/delete", {
+            method: "POST",
+            headers: {
+            "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ eventId: id })
+        });
+
+        if (res.status !== 200) alert("Event can not be deleted!");
+        else{
+            setEvents((prev) => prev.filter((e) => e._id !== id));
+        }
+        } catch (error) {
+        console.error("Error deleting event:", error);
+        }
     
+    }
 
   const handleAddEvent = async () => {
     try{
@@ -117,10 +129,9 @@ export default function EventsPage() {
       
      if (res.status === 200) {
         console.log('Saved event successfully');
-        setEvents(undefined)
         setEventName("")
         setDate(undefined)
-        setRecipes([])
+        setSelectedRecipes([])
         } else {
         console.log('Failed to event recipe');
       }
@@ -299,7 +310,7 @@ const handleRemoveRecipeField = (index: number) => {
       </div>
     ))}
   </div>
-) : userEvents.length === 0 ? (
+) : events.length === 0 ? (
   // No events message
   <div className="flex flex-col justify-center items-center gap-5 font-shadow">
     <div className="text-2xl md:text-3xl">Your events will be shown here.</div>
@@ -308,21 +319,28 @@ const handleRemoveRecipeField = (index: number) => {
 ) : (
   // Events accordion
   <Accordion type="multiple" className="w-full p-5 space-y-4">
-    {userEvents.map((event, idx) => (
-      <AccordionItem className="bg-amber-100 p-3 rounded-lg" key={idx} value={`item-${idx}`}>
-        <AccordionTrigger className="font-shadow tracking-wider md:text-3xl text-2xl ps-8">{event.name}</AccordionTrigger>
-        <AccordionContent className="ps-8 text-md">
-          <p>
-            <strong>Date:</strong>{" "}
-            {new Date(event.date).toLocaleDateString()}
-          </p>
-          <p>
-            <strong>Time:</strong> {event.time}
-          </p>
-          <p>
-            <strong>Recipes:</strong>{" "}
-            {event.recipes.map((r) => r.name).join(", ") || "None"}
-          </p>
+    {events.map((event, idx) => (
+      <AccordionItem className="bg-amber-100 p-3 rounded-lg hover:shadow-xl hover:animate-in" key={idx} value={`item-${idx}`}>
+        <AccordionTrigger className="font-shadow tracking-wider md:text-3xl text-2xl ps-8 hover:text-amber-800 hover:no-underline">{event.name}</AccordionTrigger>
+        <AccordionContent className="p-4 text-md bg-amber-50 rounded-lg">
+          <div className="flex flex-col md:flex-row gap-5">
+            <div className="w-full md:w-1/2 ps-4">
+                <p>
+                  <strong>Date:</strong>{" "}
+                  {new Date(event.date).toLocaleDateString()}
+                </p>
+                <p>
+                  <strong>Time:</strong> {event.time}
+                </p>
+                <p>
+                  <strong>Recipes:</strong>{" "}
+                  {event.recipes.map((r) => r.name).join(", ") || "None"}
+                </p>
+            </div>
+            <div className="flex flex-col justify-center items-center w-full md:w-1/2 md:items-end md:pe-4">
+                <Button className="w-1/2 md:w-1/4 bg-amber-600 hover:bg-amber-500"  onClick={()=>{handleDelete(event._id)}}>Delete</Button>
+            </div>
+          </div>
         </AccordionContent>
       </AccordionItem>
     ))}

@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { createBrowClient } from '../../../../lib/supabase-browser';
 import { useUserContext } from '../../context/UserContext';
 import CookingAnimation from '@/components/ui/cookingAnimation';
 import SignOutAnimation from '@/components/ui/signOutAnimation';
@@ -14,7 +13,7 @@ export default function SignUpPage(){
     const [email, setEmail] = useState('');
     const [result, setResult] = useState('');
 
-    const { user, setUser, login, setLogin } = useUserContext();
+    const { user,setUser, login, setLogin } = useUserContext();
 
 
     
@@ -51,42 +50,6 @@ export default function SignUpPage(){
         }
     }
     
-  
-
-    useEffect(() => {
-          async function fetchUser() {
-            const res = await fetch('/api/auth/user');
-            if (res.status === 200) {
-                const data = await res.json();
-                setLogin(true);
-                setUser(data.message); 
-            } else {
-                setLogin(false);
-                setUser(undefined);
-            }
-        }
-        async function checkMagicLink() {
-            const supabase = createBrowClient();
-            const url = new URL(window.location.href);
-            const code = url.searchParams.get('code');
-
-            if (code) {
-                const { error } = await supabase.auth.exchangeCodeForSession(code);
-                if (!error) {
-                    window.history.replaceState({}, document.title, '/account/signup'); 
-                    await new Promise((r) => setTimeout(r, 1000));
-                    fetchUser();
-                } else {
-                    console.log("Session exchange failed:", error.message);
-                }
-                } else {
-                    fetchUser(); 
-            }
-        }
-
-    checkMagicLink();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
 
     return (
         <div className='flex flex-col items-center justify-center'>
