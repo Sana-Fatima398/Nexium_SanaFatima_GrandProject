@@ -176,7 +176,7 @@ const handleRemoveRecipeField = (index: number) => {
 
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
         <div className="w-full p-10 text-3  xl md:text-5xl font-shadow text-center tracking-wider leading-relaxed">
-          Login to personalize the events according to your schedule
+          Sign in to personalize the events according to your schedule
         </div>
         <Image
           src="/event.png"

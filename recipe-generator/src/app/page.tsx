@@ -6,7 +6,6 @@ import axios from 'axios';
 import { useEffect } from "react";
 import {
   Card,
-  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -140,23 +139,34 @@ export default function Home() {
 
   return (
     <div className="flex flex-col">
-     
-  <div className="flex flex-col md:flex-row items-center md:items-start max-w-6xl mx-auto px-4 py-8 gap-10">
-  {/* Left: Carousel */}
-  <div className="w-full md:w-1/2 flex justify-center md:justify-start md:mt-5">
-    <CarouselPlugin />
-  </div>
 
-  {/* Right: Headings */}
-  <div className="w-full md:w-1/2 text-center md:text-left md:ms-8">
-    <h1 className="font-shadow text-4xl md:text-7xl text-amber-800 mb-4 md:my-16 tracking-wider font-bold">Dish Genie</h1>
-    <h2 className="font-shadow text-3xl md:text-5xl font-bold tracking-wide">Generate a recipe using AI</h2>
-  </div>
+<div className="md:ps-12 mb-10">
+
+    <div className="flex flex-col md:flex-row items-center md:items-start gap-20 px-20 mt-16">
+     
+      <div className="w-full md:w-1/2 text-center md:text-left md:ms-8">
+        <h1 className="font-shadow text-4xl md:text-7xl mb-4 md:my-5 tracking-wider font-bold bg-gradient-to-r from-amber-400 to-amber-600 text-transparent bg-clip-text">
+          Dish Genie
+        </h1>
+          <p className="text-lg md:text-3xl text-amber-800 leading-relaxed mt-6 md:mt-10 max-w-xl font-shadow tracking-widest font-bold">
+  Meet <span className="font-extrabold">Dish Genie</span> — your AI-powered kitchen sidekick that turns simple ideas into mouthwatering recipes. </p>
+
+
+      </div>
+     
+      <div className="w-full md:w-1/2 flex justify-center md:justify-start md:mt-5 md:ms-8">
+        <CarouselPlugin />
+      </div>
+
+    
+    </div>
+  
 </div>
 
 
 
-<h1 className="font-shadow text-3xl md:text-4xl text-center mt-10 font-bold tracking-wider">
+
+<h1 className="font-shadow text-3xl md:text-4xl text-center mt-10 tracking-wider">
   Hi {user?.email}, Write your prompt
 </h1>
 
@@ -227,7 +237,7 @@ export default function Home() {
 
  
 
-  {/* Show result only if not loading and result exists */}
+  
   {result && recipe && (
     <div className="m-0 md:m-0 p-6 md:p-10 w-full max-w-5xl  bg-amber-100 animate-fade-in  rounded-lg">
       <Card className="mt-2 w-full">
@@ -304,9 +314,9 @@ export default function Home() {
 
  
 
-{/* Section 1: Start Saving Your Recipes */}
+
 <div className="flex flex-col-reverse md:flex-row items-center justify-center p-6 md:p-12 bg-amber-200/30 backdrop-blur-lg border border-amber-300 shadow-md md:mx-14 md:mt-20 md:rounded-4xl transition-all">
-  {/* Text Section */}
+
   <div className="w-full md:w-1/2 text-center md:text-left md:ms-16">
     <Link href="/viewRecipe"><h1 className="font-shadow text-3xl md:text-5xl mb-4 font-bold tracking-wider text-amber-800">
       Start Saving Your Recipes!
@@ -316,16 +326,16 @@ export default function Home() {
     </p>
   </div>
 
-  {/* Image + Link */}
+
   <div className="w-full md:w-1/2 flex flex-col items-center gap-3 mb-6 md:mb-0">
     <img src="/cutlery.png" alt="cooking icon" className="w-48 md:w-44 lg:w-60" />
   
   </div>
 </div>
 
-{/* Section 2: Personalise it */}
+
 <div className="flex flex-col-reverse md:flex-row items-center justify-center p-6 my-14 md:p-12 bg-amber-200/30 backdrop-blur-lg border border-amber-300 shadow-md md:mx-14 md:rounded-4xl md:my-24 transition-all">
-  {/* Text Section */}
+
   <div className="w-full md:w-1/2 text-center md:text-left md:ms-16">
     <Link href="/events"><h1 className="font-shadow text-3xl md:text-5xl mb-4 font-bold text-amber-800 tracking-wider">
       Personalise it
@@ -335,7 +345,7 @@ export default function Home() {
     </p>
   </div>
 
-  {/* Image + Link */}
+
   <div className="w-full md:w-1/2 flex flex-col items-center gap-3 mb-6 md:mb-0">
     <img src="/cal.png" alt="calendar icon" className="w-48 md:w-44 lg:w-60" />
   

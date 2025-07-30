@@ -13,12 +13,12 @@ export const Navbar: React.FC = () => {
     <div className="bg-transparent">
       <nav className="p-4 backdrop-blur-md bg-amber-600 text-white">
         <div className="container mx-auto flex justify-between items-center">
-          {/* Logo */}
+       
           <div className="font-shadow text-4xl font-bold tracking-wider">
             DishGenie
           </div>
 
-          {/* Desktop Menu */}
+ 
           <ul className="hidden md:flex space-x-6 items-center">
            
             <li>
@@ -46,7 +46,6 @@ export const Navbar: React.FC = () => {
             </li>
           </ul>
 
-          {/* Hamburger Menu for Mobile */}
           <div className="md:hidden">
             <button
               onClick={toggleMenu}
@@ -71,7 +70,7 @@ export const Navbar: React.FC = () => {
           </div>
         </div>
 
-        {/* Mobile Menu */}
+      
         {isMenuOpen && (
           <ul className="md:hidden flex flex-col items-center space-y-4 mt-4 backdrop-blur-md p-4 ">
             <li>
@@ -104,7 +103,7 @@ export const Navbar: React.FC = () => {
         )}
       </nav>
 
-      {/* Decorative Half Circles */}
+   
       <div className="flex flex-row w-full justify-center overflow-hidden">
         {Array.from({ length: 20 }).map((_, idx) => (
           <div
