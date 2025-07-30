@@ -70,7 +70,7 @@ export default function RecipesPage(){
          <div className="container mx-auto p-4">
             <div className=" flex md:flex-row flex-col w-full">           
                 <div  className="w-1/2">
-                    <h1 className="text-6xl font-shadow m-10 text-amber-800">Recipes</h1>
+                    <h1 className="text-6xl font-shadow m-10 text-amber-800 font-bold tracking-wider">Recipes</h1>
                 </div>
       
                 <div className="w-1/2 flex justify-end items-center ms-10">

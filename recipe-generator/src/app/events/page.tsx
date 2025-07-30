@@ -31,7 +31,9 @@ export default function EventsPage() {
   const [date, setDate] = useState<Date | undefined>(undefined)
   const [time, setTime] = useState("10:30:00")
   const [eventName, setEventName] = useState("")
-  
+  const [deleteLoading, setDeleteLoading] = useState(false); 
+  const [addLoading, setAddLoading] = useState(false);
+
   const { recipes, setRecipes } = useRecipeContext();
   const { events, setEvents } = useEventContext();
 
@@ -91,7 +93,7 @@ export default function EventsPage() {
 
   
     const handleDelete = async(id: string) =>{
-        
+        setDeleteLoading(true);
         try {
         const res = await fetch("/api/event/delete", {
             method: "POST",
@@ -108,17 +110,16 @@ export default function EventsPage() {
         } catch (error) {
         console.error("Error deleting event:", error);
         }
+        setDeleteLoading(false);
     
     }
 
   const handleAddEvent = async () => {
+    
+    setAddLoading(true);
     try{
  
     if (eventName && date) {
-       console.log(user?.email);
-       console.log(date);
-       console.log(time);
-       console.log(selectedRecipes)
       const res = await axios.post('/api/event/add', {
         email: user?.email,
         name: eventName,
@@ -128,6 +129,7 @@ export default function EventsPage() {
       });
       
      if (res.status === 200) {
+        
         console.log('Saved event successfully');
         setEventName("")
         setDate(undefined)
@@ -141,6 +143,7 @@ export default function EventsPage() {
       console.error('Error saving recipe:', error);
       alert('Failed to save recipe. Please check the console for details.');
     }
+    setAddLoading(false);
   }
 
 const handleRecipeChange = (index: number, recipeId: string) => {
@@ -165,7 +168,7 @@ const handleRemoveRecipeField = (index: number) => {
     <div className="p-5 space-y-10 sm:m-7 ">
 
       <div className="flex flex-col md:flex-col items-start">
-        <h1 className="text-5xl font-bold m-6 font-shadow text-amber-800">
+        <h1 className="text-6xl font-bold m-6 font-shadow text-amber-800 tracking-wider">
           Your Events
         </h1>
       </div>
@@ -173,7 +176,7 @@ const handleRemoveRecipeField = (index: number) => {
 
       <div className="flex flex-col items-center justify-center min-h-[60vh] space-y-8">
         <div className="w-full p-10 text-3  xl md:text-5xl font-shadow text-center tracking-wider leading-relaxed">
-          Login to personalize the recipes according to your temper
+          Login to personalize the events according to your schedule
         </div>
         <Image
           src="/event.png"
@@ -281,9 +284,11 @@ const handleRemoveRecipeField = (index: number) => {
             </div>
           </div>
           <div className="flex flex-col justify-center items-center">
-          <Button className="w-1/2 mt-7 bg-amber-600 hover:bg-amber-500" onClick={handleAddEvent}>
-            Add Event
-          </Button>
+            {addLoading ? (<div className="progress-bar mt-7"/>):(  
+                <Button className="w-1/2 mt-7 bg-amber-600 hover:bg-amber-500" onClick={handleAddEvent}>
+              Add Event
+              </Button>)}
+        
           </div>
         </div>
 
@@ -295,7 +300,8 @@ const handleRemoveRecipeField = (index: number) => {
 
     
       <div className="mt-20">
-        <div className="w-full mx-auto my-8 p-3 bg-amber-100 rounded-lg">  <h2 className="text-4xl font-semibold m-6 font-shadow">Added Events</h2></div>
+        <div className="w-full mx-auto my-8 p-3 bg-amber-100 rounded-lg">  <h2 className="text-4xl font-semibold m-6 font-shadow text-amber-800">Event List</h2></div>
+        {deleteLoading && <div className="progress-bar"></div>}
         {eventLoading ? (
   // Show loading skeleton
  <div className="w-full p-8 space-y-7">

@@ -20,6 +20,7 @@ import { parseRecipe, ParsedRecipe } from "@/app/utils/parseRecipe";
 import { createBrowClient } from '../../lib/supabase-browser';
 import LoadingAnimation from "@/components/ui/loadingAnimation";
 import TeaLoading from "@/components/ui/teaLoading";
+import Link from "next/link";
 
 
 
@@ -30,6 +31,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false); 
   const [isSaved, setIsSaved] = useState(false);
   const [savingLoading, setSavingLoading] = useState(false);
+  const [hasGenerated, setHasGenerated] = useState(false);
 
   const [recipe, setRecipe] = useState<ParsedRecipe | null>(null);
   const n8n_url = process.env.NEXT_PUBLIC_N8N_URL!;
@@ -70,6 +72,29 @@ export default function Home() {
     const pointsToNote =  "If the user's prompt is wrong or unclear, respond with the best possible interpretation and place the output in the 'intro' field.";
     try{
       const response = await axios.post(n8n_url,{"query":prompt,"pointsToNote":pointsToNote});
+      console.log('Workflow triggered:', response.data);
+     
+      const rawRecipe = response.data;
+      const parsed = parseRecipe(rawRecipe);
+      console.log(parsed)
+      setResult(rawRecipe);
+      setRecipe(parsed);
+      setIsSaved(false);
+
+      } catch (error) {
+      console.error('Error triggering workflow:', error);
+    }
+    setHasGenerated(true);
+    setLoading(false);
+  }
+
+  
+  const handleFakePrompts = async (value: string)=>{
+  
+    setLoading(true);
+    const pointsToNote =  "If the user's prompt is wrong or unclear, respond with the best possible interpretation and place the output in the 'intro' field.";
+    try{
+      const response = await axios.post(n8n_url,{"query":value,"pointsToNote":pointsToNote});
       console.log('Workflow triggered:', response.data);
      
       const rawRecipe = response.data;
@@ -124,43 +149,81 @@ export default function Home() {
 
   {/* Right: Headings */}
   <div className="w-full md:w-1/2 text-center md:text-left md:ms-8">
-    <h1 className="font-shadow text-4xl md:text-7xl text-amber-800 mb-4 md:my-16  font-bold">Dish Genie</h1>
-    <h2 className="font-shadow text-3xl md:text-5xl">Generate a recipe using AI</h2>
+    <h1 className="font-shadow text-4xl md:text-7xl text-amber-800 mb-4 md:my-16 tracking-wider font-bold">Dish Genie</h1>
+    <h2 className="font-shadow text-3xl md:text-5xl font-bold tracking-wide">Generate a recipe using AI</h2>
   </div>
 </div>
 
 
 
-<h1 className="font-shadow text-4xl md:text-5xl text-center mt-10">Write your prompt</h1>
+<h1 className="font-shadow text-3xl md:text-4xl text-center mt-10 font-bold tracking-wider">
+  Hi {user?.email}, Write your prompt
+</h1>
 
-<div className="flex flex-col items-center justify-center bg-amber-100 mx-4 md:mx-14 mt-10 p-6 md:p-8 rounded-lg">
+<div className="flex flex-col items-center justify-center bg-amber-100 mx-4 md:mx-13 mt-10 p-6 md:p-8 rounded-lg">
   <form onSubmit={handleSubmit} className="w-full max-w-5xl">
-    <div className="flex flex-col md:flex-row gap-4 md:gap-6 w-full">
-      <Input
-        className="w-full md:w-11/12 bg-white shadow-md transition-all duration-200 focus:ring-2 focus:ring-amber-400"
+    <div className="relative w-full">
+      <textarea
+        className="w-full resize-none pr-14 bg-white shadow-md rounded-3xl px-6 py-4 text-base transition-all duration-200 focus:ring-2 focus:ring-amber-400 min-h-[56px] max-h-[200px] overflow-y-auto"
         value={prompt}
-        onChange={(e) => setPrompt(e.target.value)}
+        onChange={(e) => {
+          const textarea = e.target as HTMLTextAreaElement;
+          textarea.style.height = 'auto';
+          textarea.style.height = `${textarea.scrollHeight}px`; 
+          setPrompt(textarea.value);
+        }}
         placeholder="Type your prompt here..."
+        rows={1}
       />
-      <Button
+
+      <button
         type="submit"
-        className="w-full md:w-1/12 bg-green-500 text-white font-semibold shadow-md transition-all duration-200 focus:ring-2 rounded-full"
+        className="absolute right-3 top-7 pb-1 mb-2 -translate-y-1/2 bg-green-500 text-white hover:bg-green-400 font-semibold rounded-2xl w-10 h-10 flex items-center justify-center shadow-md transition-all duration-200 focus:ring-2"
       >
-        <span className="text-3xl mb-1">→</span>
-      </Button>
+        <span className="text-2xl">→</span>
+      </button>
     </div>
   </form>
-  
 </div>
+
+
 
 <div className="flex flex-col justify-center items-center w-full">
 
-     {loading && (<div className="w-1/2 h-1/2">
+   
+   {!hasGenerated && (
+<div className="w-11/12 h-full bg-amber-100 mx-4 md:mx-14 mt-10 p-6 md:p-8 rounded-lg">
+ <div className="font-shadow text-2xl font-bold tracking-wider ms-2 py-4 text-amber-800">Dont know what to write try these prompts</div>
+  <div className="grid grid-cols-2 md:grid-cols-4 gap-6 w-full font-shadow">
+   {[
+  "Recipe of falooda",
+  "Recipe of any chicken dish",
+  "Give me recipe that has potatoes and veggies",
+  "Chocolate Milkshake",
+].map((text, index) => (
+  <button
+    key={index}
+    onClick={() => {
+      handleFakePrompts(text);
+    }}
+    className="bg-amber-200/30 backdrop-blur-md border border-amber-300 shadow-md rounded-2xl h-48 w-full p-5 transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-lg hover:border-amber-400 cursor-pointer flex items-center justify-center text-center"
+  >
+    <span className="text-xl md:text-2xl tracking-wide md:leading-snug text-amber-900 font-semibold">
+      {text}
+    </span>
+  </button>
+))}
+
+  </div>
+</div>)}
+
+  {loading && (<div className="w-1/2 h-1/2">
        <LoadingAnimation/>
     </div>
     )}
 </div>
-    <div className="flex flex-col items-center justify-center mx-0 md:mx-14 my-10  rounded-lg">
+  
+  <div className="flex flex-col items-center justify-center mx-0 md:mx-14 my-10  rounded-lg">
 
  
 
@@ -170,7 +233,7 @@ export default function Home() {
       <Card className="mt-2 w-full">
         <CardHeader>
           <CardDescription >{recipe.intro}</CardDescription>
-          <CardTitle className="text-xl md:text-3xl font-bold font-shadow">{recipe.name}</CardTitle>
+          <CardTitle className="text-xl md:text-3xl font-bold font-shadow tracking-wide">{recipe.name}</CardTitle>
           <CardDescription className="text-sm md:text-base">{recipe.description}</CardDescription>
         </CardHeader>
         <CardContent>
@@ -241,33 +304,41 @@ export default function Home() {
 
  
 
-     <div className="flex flex-col-reverse md:flex-row items-center justify-center p-6 md:p-12 bg-amber-100 md:mx-14 md:mt-20 md:rounded-4xl md:shadow-xl">
+{/* Section 1: Start Saving Your Recipes */}
+<div className="flex flex-col-reverse md:flex-row items-center justify-center p-6 md:p-12 bg-amber-200/30 backdrop-blur-lg border border-amber-300 shadow-md md:mx-14 md:mt-20 md:rounded-4xl transition-all">
   {/* Text Section */}
   <div className="w-full md:w-1/2 text-center md:text-left md:ms-16">
-    <h1 className="font-shadow text-3xl md:text-5xl mb-4 font-bold text-amber-800">Start Saving Your Recipes!</h1>
-    <p className="text-gray-600 mb-6 text-lg md:text-xl">
-      Easily bookmark, view, and manage your favorite recipes all in one place.
+    <Link href="/viewRecipe"><h1 className="font-shadow text-3xl md:text-5xl mb-4 font-bold tracking-wider text-amber-800">
+      Start Saving Your Recipes!
+    </h1></Link>
+    <p className="text-gray-700 mb-6 text-lg md:text-xl">
+      Easily save, view, and manage your favorite recipes all in one place.
     </p>
   </div>
 
-  {/* Image Section */}
-  <div className="w-full md:w-1/2 flex justify-center mb-6 md:mb-0">
+  {/* Image + Link */}
+  <div className="w-full md:w-1/2 flex flex-col items-center gap-3 mb-6 md:mb-0">
     <img src="/cutlery.png" alt="cooking icon" className="w-48 md:w-44 lg:w-60" />
+  
   </div>
 </div>
 
- <div className="flex flex-col-reverse md:flex-row items-center justify-center p-6 my-14 md:p-12 bg-amber-100 md:mx-14 md:rounded-4xl md:shadow-xl md:my-24">
+{/* Section 2: Personalise it */}
+<div className="flex flex-col-reverse md:flex-row items-center justify-center p-6 my-14 md:p-12 bg-amber-200/30 backdrop-blur-lg border border-amber-300 shadow-md md:mx-14 md:rounded-4xl md:my-24 transition-all">
   {/* Text Section */}
   <div className="w-full md:w-1/2 text-center md:text-left md:ms-16">
-    <h1 className="font-shadow text-3xl md:text-5xl mb-4 font-bold text-amber-800">Personalise it</h1>
-    <p className="text-gray-600 mb-6 text-lg md:text-xl">
+    <Link href="/events"><h1 className="font-shadow text-3xl md:text-5xl mb-4 font-bold text-amber-800 tracking-wider">
+      Personalise it
+    </h1></Link>
+    <p className="text-gray-700 mb-6 text-lg md:text-xl">
       Personalize it by adding your own events — whether it is a wedding, Eid, Christmas, or anything special!
     </p>
   </div>
 
-  {/* Image Section */}
-  <div className="w-full md:w-1/2 flex justify-center mb-6 md:mb-0">
-    <img src="/cal.png" alt="cooking icon" className="w-48 md:w-44 lg:w-60" />
+  {/* Image + Link */}
+  <div className="w-full md:w-1/2 flex flex-col items-center gap-3 mb-6 md:mb-0">
+    <img src="/cal.png" alt="calendar icon" className="w-48 md:w-44 lg:w-60" />
+  
   </div>
 </div>
 
