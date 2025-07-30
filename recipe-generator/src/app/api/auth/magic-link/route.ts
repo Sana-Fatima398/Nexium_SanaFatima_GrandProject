@@ -6,7 +6,8 @@ export async function POST(request: Request) {
     const supabase = await createClient();
     const { email } = await request.json();
 
-   
+   const redirectUrl = process.env.NEXT_PUBLIC_REDIRECT_URL + "/auth/callback";
+
     if (!email ) {
         return NextResponse.json({ error: "All fields are required" }, { status: 400 });
     }
@@ -15,7 +16,7 @@ export async function POST(request: Request) {
         email,
         options: {
             shouldCreateUser: true,
-            emailRedirectTo: "http://localhost:3000/auth/callback", 
+            emailRedirectTo: redirectUrl, 
         },
     });
 
