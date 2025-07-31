@@ -131,17 +131,20 @@ export default function EventsPage() {
      if (res.status === 200) {
         
         console.log('Saved event successfully');
+        const newEvent = res.data.savedEvent;
+        setEvents((prev) => [...prev, newEvent]);
         setEventName("")
         setDate(undefined)
         setSelectedRecipes([])
         } else {
         console.log('Failed to event recipe');
+        alert('Failed to save event. Please try again.');
       }
     } 
   }
     catch (error) {
       console.error('Error saving recipe:', error);
-      alert('Failed to save recipe. Please check the console for details.');
+      alert('Failed to save event.');
     }
     setAddLoading(false);
   }

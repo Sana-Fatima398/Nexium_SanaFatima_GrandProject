@@ -10,7 +10,7 @@ export async function POST(request: NextRequest){
         await newEvent.save();
        
 
-        return NextResponse.json({message:"Event Saved Successfully"}, {status: 200});
+        return NextResponse.json({message:"Event Saved Successfully", savedEvent: newEvent}, {status: 200});
 
     } catch(error){
         console.error("Error Saving Event", error);

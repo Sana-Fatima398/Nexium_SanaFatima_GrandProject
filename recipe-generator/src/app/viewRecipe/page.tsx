@@ -60,7 +60,7 @@ export default function RecipesPage(){
             setTimeout(() => setShowDeleteAlert(false), 3000);
         }
         } catch (error) {
-        console.error("Error deleting recipe:", error);
+        console.log("Error deleting recipe:", error);
         }
     
     }

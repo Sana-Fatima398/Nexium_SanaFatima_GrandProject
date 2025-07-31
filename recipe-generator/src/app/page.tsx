@@ -31,6 +31,7 @@ export default function Home() {
   const [isSaved, setIsSaved] = useState(false);
   const [savingLoading, setSavingLoading] = useState(false);
   const [hasGenerated, setHasGenerated] = useState(false);
+  const [isFakePrompt, setIsFakePrompt] = useState(false);
 
   const [recipe, setRecipe] = useState<ParsedRecipe | null>(null);
   const n8n_url = process.env.NEXT_PUBLIC_N8N_URL!;
@@ -68,10 +69,10 @@ export default function Home() {
       return
     }
     setLoading(true);
+    setIsFakePrompt(false);
     const pointsToNote =  "If the user's prompt is wrong or unclear, respond with the best possible interpretation and place the output in the 'intro' field.";
     try{
       const response = await axios.post(n8n_url,{"query":prompt,"pointsToNote":pointsToNote});
-      console.log('Workflow triggered:', response.data);
      
       const rawRecipe = response.data;
       const parsed = parseRecipe(rawRecipe);
@@ -91,10 +92,10 @@ export default function Home() {
   const handleFakePrompts = async (value: string)=>{
   
     setLoading(true);
+    setIsFakePrompt(true);
     const pointsToNote =  "If the user's prompt is wrong or unclear, respond with the best possible interpretation and place the output in the 'intro' field.";
     try{
       const response = await axios.post(n8n_url,{"query":value,"pointsToNote":pointsToNote});
-      console.log('Workflow triggered:', response.data);
      
       const rawRecipe = response.data;
       const parsed = parseRecipe(rawRecipe);
@@ -127,6 +128,7 @@ export default function Home() {
         setIsSaved(true);
       } else {
         console.log('Failed to save recipe');
+        alert('Failed to save recipe.');
       }
     } catch (error) {
       console.error('Error saving recipe:', error);
@@ -291,16 +293,17 @@ export default function Home() {
   )}
 </CardContent>
 
-        <CardFooter>
-              {login && !isSaved && (
+      <CardFooter>
+         {login && !isSaved && !isFakePrompt && (
         savingLoading ? (
           <div className="w-full md:w-auto mt-4">
-           <div className="progress-bar" />
+            <div className="progress-bar" />
           </div>
         ) : (
           <Button className=" bg-amber-600 hover:bg-amber-500" onClick={saveRecipe}>Save</Button>
         )
       )}
+
 
       {isSaved && (
         <Button disabled variant="outline">Saved</Button>
